@@ -7,6 +7,8 @@ import json
 
 from ppobyter.eventmaker import EventMaker
 from ppobyter.main import Main
+import log
+logger = log.Logger()
 
 
 class EventClientSocket(WebSocketApp):
@@ -24,8 +26,7 @@ class EventClientSocket(WebSocketApp):
         t.start()
 
     def on_open(self):
-        pass
-        #self.send_json({"msg": "hello"})
+        logger.info("connected to server.")
 
     def on_message(self, message):
         try:
