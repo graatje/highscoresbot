@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 from websocket import WebSocketApp, _logging
 import json
 
@@ -13,18 +15,30 @@ class EventClientSocket(WebSocketApp):
                          on_message=self.on_message,
                          on_error=self.on_error)
 
+    def on_open(self):
+        self.send_json({"msg": "hello"})
+
     def on_message(self, message):
         print(message)
+        try:
+            self.on_json_message(json.loads(message))
+        except JSONDecodeError:
+            self.send_json({"error": "json data expected"})
+        # any other exceptions will get handled by on_error
+
+    def on_json_message(self, message: dict):
+        pass
+
+    def send_json(self, message: dict):
+        self.send(data=json.dumps(message))
 
     def on_error(self, error):
+        self.send_json({"error": "an error has occured."})
         print(error)
         print("ERROR!!")
 
     def on_close(self, close_status_code, close_msg):
         print("### closed ###")
-
-    def on_open(self):
-        self.send(data='{"type": "world"}')
 
     def _callback(self, callback, *args):
         if callback:
@@ -33,8 +47,7 @@ class EventClientSocket(WebSocketApp):
 
             except Exception as e:
                 _logging.error("error from callback {}: {}".format(callback, e))
-                if self.on_error:
-                    self.on_error(e)
+                self.on_error(e)
 
 
 if __name__ == "__main__":
