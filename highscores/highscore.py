@@ -2,7 +2,7 @@ import sqlite3
 from typing import List
 import pandas
 
-from pathmanager import PathManager
+
 from commands.utils.utils import replacenan
 from ppowebsession import PpoWebSession
 

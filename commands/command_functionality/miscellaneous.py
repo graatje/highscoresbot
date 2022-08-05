@@ -11,7 +11,7 @@ from commands.interractions.selectsview import SelectsView
 from commands.sendable import Sendable
 from commands.utils.utils import tablify
 from highscores import getClanList
-from pathmanager import PathManager
+
 from ppobyter.marketplace.item import Item
 from ppobyter.marketplace.pokemon import Pokemon
 

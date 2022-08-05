@@ -6,7 +6,7 @@ from discord import User, Client
 
 from commands.sendable import Sendable
 from commands.interractions.discord_binder import DiscordBinder
-from pathmanager import PathManager
+
 from ppobyter.ingame_commands.ingamecommandclient import IngamecommandClient
 
 

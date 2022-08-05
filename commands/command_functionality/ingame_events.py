@@ -10,7 +10,7 @@ from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import tablify, getworldbosstime
 from highscores import getClanList
-from pathmanager import PathManager
+
 
 
 async def lastonline(sendable: Sendable, playername: str):

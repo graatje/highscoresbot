@@ -35,6 +35,7 @@ class Event:
         :return:
         """
         #@todo connect to api
+        result = [[890306062211772516, None, None]]
         self._recipients = [row[0] for row in result]
         self._pingroles = [row[1] for row in result]
         self._alive_time = [row[2] for row in result]

@@ -1,7 +1,7 @@
 import sqlite3
 
 from highscores import WorldbossDamage
-from pathmanager import PathManager
+
 
 
 query = "CREATE TABLE worldboss_dmg(worldbossid INTEGER, playername TEXT, damage INTEGER, " \

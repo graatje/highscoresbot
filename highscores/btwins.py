@@ -2,7 +2,7 @@ import sqlite3
 from typing import List
 import highscores
 from highscores.highscore import Highscore
-from pathmanager import PathManager
+
 
 
 class Btwins(Highscore):

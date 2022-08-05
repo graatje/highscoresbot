@@ -21,7 +21,6 @@ class Worldboss(Event):
         self.EVENTNAME = "worldboss"
         super(Worldboss, self).__init__()
         self.presspowerticket()
-        self.insertworldboss()
 
     def makeMessage(self) -> str:
         """

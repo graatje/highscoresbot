@@ -9,8 +9,6 @@ from PIL import Image
 from discord.ext.commands import Context
 from numpy import isnan
 
-from pathmanager import PathManager
-
 
 def replacenan(list, replacement):
     for i in range(len(list)):
