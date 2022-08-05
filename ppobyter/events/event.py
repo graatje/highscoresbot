@@ -1,5 +1,4 @@
 import sqlite3
-from pathmanager import PathManager
 import discord
 from typing import Union
 
@@ -14,7 +13,6 @@ class Event:
         Here pingroles, recipients, alivetime and pmrecipients are initialized.
         It also calls the determineRecipients method.
         """
-        self.pathManager = PathManager()
         self.EVENTNAME: str
         # pingroles should be same size as recipients.
         self._pingroles = []
@@ -36,14 +34,10 @@ class Event:
         Base method for determining channel recipients based on eventname.
         :return:
         """
-        conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
-        cur = conn.cursor()
-        cur.execute("SELECT channel, pingrole, alivetime FROM eventconfig WHERE eventname=? AND channel is not null", (self.EVENTNAME,))
-        result = cur.fetchall()
+        #@todo connect to api
         self._recipients = [row[0] for row in result]
         self._pingroles = [row[1] for row in result]
         self._alive_time = [row[2] for row in result]
-        conn.close()
 
     def makeMessage(self) -> Union[str, discord.Embed]:
         """

@@ -30,25 +30,6 @@ class Worldboss(Event):
         """
         return f"A {self.pokemon} World Boss has been spotted at {self.location}!"
 
-    def insertworldboss(self):
-        """
-        Inserts both location and worldboss into the database.
-        """
-        date = str(datetime.datetime.now()).split()[0]
-        conn = sqlite3.connect(self.pathManager.getpath("data.db"))
-        cur = conn.cursor()
-        cur.execute("INSERT INTO worldboss(worldbossname, date) VALUES(?, ?)", (self.pokemon, date))
-        conn.commit()
-        try:
-            cur.execute("INSERT INTO worldbosslocations(location) VALUES(?)", (self.location,))
-            conn.commit()
-        except sqlite3.IntegrityError:
-            pass
-        except sqlite3.OperationalError:
-            print("database locked!!!!")
-        finally:
-            conn.close()
-
     def determineRecipients(self, **kwargs):
         """
         Determines pmrecipients and channelrecipients.

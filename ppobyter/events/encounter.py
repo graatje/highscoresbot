@@ -20,18 +20,6 @@ class Encounter(ClanEvent):
         self.level = level.lower()
         self.EVENTNAME = "encounter"
         super(Encounter, self).__init__(player)
-        self.insertencounter()
-
-    def insertencounter(self):
-        """
-        inserts an encounter into the database.
-        """
-        conn = sqlite3.connect(self.pathManager.getpath("ingame_data.db"))
-        cur = conn.cursor()
-        date = str(datetime.datetime.now()).split()[0]
-        cur.execute("INSERT INTO Encounters(Name, Encounters, Date) VALUES(?,?,?)", (self.player, self.pokemon, date))
-        conn.commit()
-        conn.close()
 
     def determineRecipients(self):
         """

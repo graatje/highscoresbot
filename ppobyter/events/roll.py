@@ -26,17 +26,6 @@ class Roll(ClanEvent):
         self.pokemon = pokemon.lower()
         self.EVENTNAME = "roll"
         super(Roll, self).__init__(player)
-        self.insertRoll()
-
-    def insertRoll(self):
-        """
-        Inserts the roll into the database.
-        """
-        conn = sqlite3.connect(self.pathManager.getpath("ingame_data.db"))
-        cur = conn.cursor()
-        cur.execute("INSERT INTO rolls(player, pokemon, date) VALUES(?, ?, ?)", (self.player, self.pokemon, self.date))
-        conn.commit()
-        conn.close()
 
     def determineRecipients(self):
         """

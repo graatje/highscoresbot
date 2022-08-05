@@ -17,24 +17,6 @@ class Honey(Event):
         self.player = player
         self.EVENTNAME = "honey"
         super(Honey, self).__init__()
-        self.insertLocation()
-
-    def insertLocation(self):
-        """
-        inserts the location into the database.
-        :return:
-        """
-        conn = sqlite3.connect(self.pathManager.getpath("data.db"))
-        cur = conn.cursor()
-        try:
-            cur.execute("INSERT INTO honeylocations(location) VALUES(?)", (self.location,))
-            conn.commit()
-        except sqlite3.IntegrityError:
-            pass
-        except sqlite3.OperationalError:
-            print("database locked!!!!")
-        finally:
-            conn.close()
 
     def makeMessage(self) -> str:
         """

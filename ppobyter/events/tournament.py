@@ -29,25 +29,6 @@ class Tournament(Event):
         return f"The {self.tournament} Tournament will start in 30 minutes at the Vermilion City PvP Arena. " \
                f"Tournament prize: " + ", ".join(self.prizes)
 
-    def insertprizes(self):
-        """
-        Inserts the prizes into the database.
-        """
-        conn = sqlite3.connect(self.pathManager.getpath("data.db"))
-        cur = conn.cursor()
-        for prize in self.prizes:
-            pattern = r"(.* ?)(?= \(([0-9]+)\))"
-            if match := re.search(pattern, prize):
-                prize = match.group()
-            try:
-                cur.execute("INSERT INTO tournamentprizes(prize) VALUES(?)", (prize,))
-                conn.commit()
-            except sqlite3.IntegrityError:
-                pass
-            except sqlite3.OperationalError:
-                print("database locked!!!!")
-        conn.close()
-
     def determineRecipients(self):
         """
         This determines both the recipients for pm and for channels.

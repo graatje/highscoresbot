@@ -19,15 +19,18 @@ class EventClientSocket(WebSocketApp):
         self.send_json({"msg": "hello"})
 
     def on_message(self, message):
-        print(message)
         try:
             self.on_json_message(json.loads(message))
         except JSONDecodeError:
-            self.send_json({"error": "json data expected"})
+            print("the server sent non-json data")
+            print(message)
         # any other exceptions will get handled by on_error
 
     def on_json_message(self, message: dict):
-        pass
+        msgtype = message.get("type", None)
+        if msgtype is None:
+            print("messagetype was not provided.")
+            return
 
     def send_json(self, message: dict):
         self.send(data=json.dumps(message))

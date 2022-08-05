@@ -12,18 +12,6 @@ class Chest(ClanEvent):
         self.location = location
         self.EVENTNAME = "chest"
         super(Chest, self).__init__(player)
-        self.insertchest()
-
-    def insertchest(self):
-        """
-        inserts a treasure chest in the database.
-        """
-        conn = sqlite3.connect(self.pathManager.getpath("ingame_data.db"))
-        cur = conn.cursor()
-        date = str(datetime.datetime.now()).split()[0]
-        cur.execute("INSERT INTO chests(location, player, date) VALUES(?,?,?)", (self.location.lower(), self.player.lower(), date))
-        conn.commit()
-        conn.close()
 
     def determineRecipients(self):
         """
