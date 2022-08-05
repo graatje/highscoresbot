@@ -19,7 +19,6 @@ This discord bot uses the following requirements, these include but are not limi
 <ul>
 <li>python 3.9+</li>
 <li>discord.py</li>
-<li>pyshark</li>
 <li>nest_asyncio</li>
 <li>asyncio</li>
 <li>discord_components</li>

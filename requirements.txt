@@ -7,4 +7,4 @@ requests
 bs4
 nest_asyncio
 pyautogui
-websockets
+websocket-client
