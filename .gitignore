@@ -34,3 +34,5 @@ afkpreventor.py
 sprites/
 
 logs/
+
+.env

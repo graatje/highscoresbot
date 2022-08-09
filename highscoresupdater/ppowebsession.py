@@ -1,6 +1,6 @@
 import time
 from typing import Tuple
-
+import pandas
 import lxml
 import requests
 from lxml import html
@@ -28,6 +28,7 @@ class PpoWebSession:
         except Exception as e:
             print(e)
             self.loginmethod2()
+
     def getpage(self, page: str) -> str:
         """
         gets the html of the webpage.
@@ -36,7 +37,7 @@ class PpoWebSession:
         """
         if self.session is not None:
             response: Response = self.session.get(page)
-            time.sleep(self.interval)
+            time.sleep(self.interval)  # @todo why here???????????
             return response.text
         else:
             raise Exception("logged out!")
@@ -109,7 +110,21 @@ class PpoWebSession:
         self.session.post("https://pokemon-planet.com/forums/index.php?action=login2", data=logincookies)
 
 if __name__ == "__main__":
-    session = PpoWebSession("username", "password")
-  #  help(session)
+  #   session = PpoWebSession("username", "password")
+  # #  help(session)
+  #   session.login()
+    import pandas
+    session = PpoWebSession()  # username, password
     session.login()
-    session.logout()
+    theresult = session.getpage("https://pokemon-planet.com/topStrongestClans.php")
+    dataframe = pandas.read_html(theresult)
+    df = dataframe[-1]
+    writer = pandas.ExcelWriter('test.xlsx', engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='welcome', index=False)
+    for index, row in df.iterrows():
+        if index == 0:  # this is just the layout of the table.
+            continue
+        elif index == 1:
+            print(list(row.values))
+        else:
+            print(row.values)

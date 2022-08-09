@@ -8,3 +8,4 @@ bs4
 nest_asyncio
 pyautogui
 websocket-client
+python-dotenv

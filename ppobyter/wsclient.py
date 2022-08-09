@@ -2,7 +2,7 @@ import asyncio
 import os
 import threading
 from json import JSONDecodeError
-from websocket import WebSocketApp, _logging
+from websocket import WebSocketApp
 import json
 
 from ppobyter.eventmaker import EventMaker
@@ -32,33 +32,34 @@ class EventClientSocket(WebSocketApp):
         try:
             self.on_json_message(json.loads(message))
         except JSONDecodeError:
-            print("the server sent non-json data")
-            print(message)
+            logger.warning(f"the server sent non-json data, {message}")
         # any other exceptions will get handled by on_error
 
     def on_json_message(self, message: dict):
         msgtype = message.get("type", None)
         if msgtype is None:
-            print("messagetype was not provided.")
+            logger.debug("message type not provided")
             return
 
         if msgtype == "ingamedata":
+            logger.debug("message type is ingame data")
             event = EventMaker.makeEvent(eventname=message.get("eventtype", None),
                                          kwargs=message.get("data", {}))
-            print(event)
+
             if event is not None:
+                logger.debug(f"following event made: {event}")
                 self.client.add_event(event)
 
     def send_json(self, message: dict):
+        logger.debug(f"sent {message}")
         self.send(data=json.dumps(message))
 
     def on_error(self, error):
         self.send_json({"error": "an error has occured."})
-        print(error)
-        print("ERROR!!")
+        logger.exception(f"an exception has occured: {str(error)}")
 
     def on_close(self, close_status_code, close_msg):
-        print("### closed ###")
+        logger.info(f"websocket closed with status code: {close_status_code}   and message: {close_msg}.")
 
     def _callback(self, callback, *args):
         if callback:
@@ -66,7 +67,7 @@ class EventClientSocket(WebSocketApp):
                 callback(*args)
 
             except Exception as e:
-                _logging.error("error from callback {}: {}".format(callback, e))
+                logger.error("error from callback {}: {}".format(callback, e))
                 self.on_error(e)
 
 

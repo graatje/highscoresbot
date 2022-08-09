@@ -4,7 +4,7 @@ import pandas
 
 
 from commands.utils.utils import replacenan
-from ppowebsession import PpoWebSession
+from highscoresupdater.ppowebsession import PpoWebSession
 
 
 class Highscore:
