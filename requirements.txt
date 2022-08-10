@@ -9,3 +9,4 @@ nest_asyncio
 pyautogui
 websocket-client
 python-dotenv
+pyjwt

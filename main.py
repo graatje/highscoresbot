@@ -1,11 +1,13 @@
 import os
 import traceback
-
+from dotenv import load_dotenv
 import discord
 from discord import Forbidden, NotFound
 from discord.ext import commands
 from discord.ext.commands import Context, CommandNotFound, CommandInvokeError, NoPrivateMessage, MissingRequiredArgument
 
+
+load_dotenv()
 
 class Main(commands.Bot):
     def __init__(self):
@@ -13,11 +15,14 @@ class Main(commands.Bot):
         super().__init__([".", "?"])
         # self.cog_files = ["commands.ingame_events", "commands.highscores", "commands.eventconfig",
         #                   "commands.miscellaneous", "commands.pmconfig"]
-        self.cog_files = ["commands.slash_commands.highscores", "commands.slash_commands.eventconfigurations",
-                          "commands.slash_commands.ingame_events", "commands.slash_commands.miscellaneous",
-                          "commands.slash_commands.pmconfig",
-                          "commands.slash_commands.discordbinding",
-                          "commands.msgcontent_commands.msgcontent_highscores"]
+        self.cog_files = ["commands.slash_commands.highscores",
+                          # "commands.slash_commands.eventconfigurations",
+                          # "commands.slash_commands.ingame_events",
+                          # "commands.slash_commands.miscellaneous",
+                          # "commands.slash_commands.pmconfig",
+                          # "commands.slash_commands.discordbinding",
+                          # "commands.msgcontent_commands.msgcontent_highscores"
+                          ]
 
     async def on_ready(self):
         """
@@ -98,5 +103,5 @@ class Main(commands.Bot):
             
 if __name__ == "__main__":
     client = Main()
-    client.run(os.environ.get("token"))
+    client.run(os.environ.get("discordtoken"))
 

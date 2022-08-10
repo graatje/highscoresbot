@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-from pandas import Series
+from highscoresbotapi import HighscoresbotAPI
 
 import log
 from config import Config
@@ -16,6 +16,7 @@ import pandas
 load_dotenv(dotenv_path=Config.root_folder + "/.env")
 logger = log.Logger()
 logger.setLevel(50)
+
 
 class HighscoresUpdater:
     """
@@ -64,7 +65,8 @@ class HighscoresUpdater:
                     data["data"][key] = ""
             alldata.append(data)
 
-        resp = requests.patch(Config.api_root + "highscores/highscore/" + config.highscorename + "/", json=alldata)
+        resp = HighscoresbotAPI().makePatchRequest(Config.api_root + "highscores/highscore/" + config.highscorename + "/",
+                                                   json=alldata)
         if not resp:
             logger.warning(f"the server responded with status code {resp.status_code} and json {resp.json()}")
 
@@ -98,6 +100,6 @@ class HighscoresUpdater:
 
 
 if __name__ == "__main__":
-    websession = PpoWebSession(username=os.environ.get("ppousername"), password=os.environ.get("password"))
+    websession = PpoWebSession(username=os.environ.get("ppousername"), password=os.environ.get("ppopassword"))
     websession.login()
     HighscoresUpdater(websession=websession, timeout=5).main()

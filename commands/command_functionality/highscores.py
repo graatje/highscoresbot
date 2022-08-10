@@ -1,8 +1,8 @@
 import sqlite3
-from typing import Union, List
+from typing import Union, List, Dict
 
-from discord import User
-from discord.ext import commands
+import requests
+from highscoresbotapi import HighscoresbotAPI
 from discord.ext.commands import Command
 
 from commands.interractions.highscore_command import HighscoreCommand
@@ -11,6 +11,7 @@ from commands.interractions.selectsview import SelectsView
 from commands.interractions.top_command import TopCommand
 from commands.sendable import Sendable
 from commands.utils.utils import joinmessages, tablify
+from config import Config
 from highscores import allhighscores, AncMapcontrol, BzMapcontrol, BestClans, RichestClans, SafariMapcontrol, \
     clanhighscores
 from highscores.highscore import Highscore
@@ -39,18 +40,21 @@ async def getplayer(sendable: Sendable, username: str):
     :param ctx: discord context
     :param username: the name of the player you want info from.
     """
-    username = username.lower()
-    allmessages = []
-    for highscore in allhighscores:
-        highscore = highscore()
-        try:
-            values = highscore.getDbValues(query="SELECT * FROM {0} WHERE username=?".format(highscore.NAME),
-                                           params=[username])
-            if (newmessages := tablify(highscore.LAYOUT, values))[0] != "No results found.":
-                allmessages += newmessages
-        except sqlite3.OperationalError:
-            pass
+    playerresp = HighscoresbotAPI().makeGetRequest(Config.api_root + "highscores/highscore/",
+                                             params={"username": username.lower()})
+    highscoresresp = HighscoresbotAPI().makeGetRequest(Config.api_root + "highscores/highscoreconfig/")
 
+    highscoresrespjson: Dict[str, Dict[str, str]] = {highscore["highscorename"]: highscore["fieldmapping"]
+                                                     for highscore in highscoresresp.json()}
+    allmessages = []
+    for playerhighscore in playerresp.json():
+        fieldmapping = highscoresrespjson[playerhighscore["highscore"]]
+        layout = ["Rank"]
+        values = [str(playerhighscore["rank"])]
+        for key, value in fieldmapping.items():
+            layout.append(str(value))
+            values.append(str(playerhighscore[key]))
+        allmessages.append(tablify(layout, [values])[0])
     allmessages = joinmessages(allmessages)
 
     if len(allmessages) == 0:
