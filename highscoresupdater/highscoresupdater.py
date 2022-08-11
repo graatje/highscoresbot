@@ -1,7 +1,7 @@
 import os
 from typing import List
 
-from highscoresbotapi import HighscoresbotAPI
+
 
 import log
 from config import Config
@@ -11,9 +11,11 @@ from highscoreconfig import HighscoreConfig
 import time
 from dotenv import load_dotenv
 import pandas
+load_dotenv(dotenv_path=Config.root_folder + "/.env")  # we need those envs before the singleton has been made.
+
+from highscoresbotapi import HighscoresbotAPI
 
 
-load_dotenv(dotenv_path=Config.root_folder + "/.env")
 logger = log.Logger()
 logger.setLevel(50)
 
@@ -48,27 +50,30 @@ class HighscoresUpdater:
         df = pandas.read_html(html)[0]
         mapping = {}
         alldata = []
-        for i, row in df.iterrows():
-            if i == 0:
-                row = [val.lower() for val in list(row)]
-                for index, (key, value) in enumerate(config.fieldmapping.items()):
-                    mapping[key] = row.index(value)
-                mapping["rank"] = row.index("rank")
-                continue  # skipping the layout.
-            data = {"data": {}}
-            for key, index in mapping.items():
-                if key.lower() == "rank":
-                    data["rank"] = row[index]
-                elif isinstance(row[index], str) or isinstance(row[index], int):
-                    data["data"][key] = row[index]
-                else:
-                    data["data"][key] = ""
-            alldata.append(data)
+        try:
+            for i, row in df.iterrows():
+                if i == 0:
+                    row = [val.lower() for val in list(row)]
+                    for index, (key, value) in enumerate(config.fieldmapping.items()):
+                        mapping[key] = row.index(value)
+                    mapping["rank"] = row.index("rank")
+                    continue  # skipping the layout.
+                data = {"data": {}}
+                for key, index in mapping.items():
+                    if key.lower() == "rank":
+                        data["rank"] = row[index]
+                    elif isinstance(row[index], str) or isinstance(row[index], int):
+                        data["data"][key] = row[index]
+                    else:
+                        data["data"][key] = ""
+                alldata.append(data)
 
-        resp = HighscoresbotAPI().makePatchRequest(Config.api_root + "highscores/highscore/" + config.highscorename + "/",
-                                                   json=alldata)
-        if not resp:
-            logger.warning(f"the server responded with status code {resp.status_code} and json {resp.json()}")
+            resp = HighscoresbotAPI().makePatchRequest(Config.api_root + "highscores/highscore/" + config.highscorename + "/",
+                                                       json=alldata)
+            if not resp:
+                logger.warning(f"the server responded with status code {resp.status_code} and json {resp.json()}")
+        except Exception as e:
+            logger.exception("exception during highscore " + config.highscorename)
 
     def __loadConfigurations(self, hardReload: bool = False):
         """

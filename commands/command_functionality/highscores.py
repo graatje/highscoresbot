@@ -12,9 +12,7 @@ from commands.interractions.top_command import TopCommand
 from commands.sendable import Sendable
 from commands.utils.utils import joinmessages, tablify
 from config import Config
-from highscores import allhighscores, AncMapcontrol, BzMapcontrol, BestClans, RichestClans, SafariMapcontrol, \
-    clanhighscores
-from highscores.highscore import Highscore
+
 
 
 async def getdefaultclanname(interaction, comment=True) -> Union[str, None]:
@@ -126,8 +124,7 @@ async def mapcontrol(sendable: Sendable, clanname: str=None):
     :param ctx: discord context
     :param clanname: the name of the clan, optional.
     """
-    mapcontrolhighscores = [(AncMapcontrol, "Ancient cave"), (BzMapcontrol, "Battle zone"),
-                            (SafariMapcontrol, "Safari zone")]
+    HighscoresbotAPI().makeGetRequest()
     if clanname is None:
         clanname = ""
     messages = []
@@ -141,43 +138,3 @@ async def mapcontrol(sendable: Sendable, clanname: str=None):
     messages = joinmessages(messages)
     view = ResultmessageShower(messages, sendable)
     await sendable.send(messages[0], view=view)
-
-
-def get_clancommands():
-    clancmds = {}
-    for highscore in clanhighscores:
-        highscore = highscore()
-
-        def outer_cmd(score: Highscore) -> Command:
-            async def cmd(sendable: Sendable, clanname=None):
-                if clanname is None and ((clanname := await getdefaultclanname(sendable)) is None):
-                    return
-                messages = tablify(score.LAYOUT, score.getDbValues(clan=clanname.lower()))
-                for i in messages:
-                    await sendable.send(i)
-
-            return cmd
-
-        clancmds[highscore.NAME] = outer_cmd(highscore)
-    return clancmds
-
-
-def get_top10cmds():
-    top10cmds = {}
-    somelist = [RichestClans, BestClans]
-    for highscore in somelist:
-        highscore = highscore()
-        def outer_cmd(score: Highscore):
-            async def cmd(ctx, clanname=None):
-                if clanname is None and ((clanname := await getdefaultclanname(ctx, comment=False)) is None):
-                    clanname = ""
-                values = score.getDbValues(query="SELECT * FROM {0} WHERE rank < 10 or name = ?".format(score.NAME),
-                                           clan=clanname.lower())
-                resultmessages = tablify(score.LAYOUT, values)
-                for i in resultmessages:
-                    await ctx.send(i)
-
-            return cmd
-        top10cmds[highscore.NAME] = outer_cmd(highscore)
-    return top10cmds
-

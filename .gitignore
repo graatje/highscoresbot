@@ -36,3 +36,5 @@ sprites/
 logs/
 
 .env
+
+highscores_adder.py

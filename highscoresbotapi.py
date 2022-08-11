@@ -1,6 +1,6 @@
 import os
 import time
-
+from dotenv import load_dotenv
 import requests
 import jwt
 from requests import Response
@@ -8,6 +8,7 @@ from requests import Response
 import log
 from config import Config
 
+load_dotenv()
 logger = log.Logger()
 
 

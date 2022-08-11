@@ -10,3 +10,4 @@ pyautogui
 websocket-client
 python-dotenv
 pyjwt
+html5lib
