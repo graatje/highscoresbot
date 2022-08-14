@@ -2,9 +2,9 @@ import sqlite3
 from typing import Union, List, Dict
 
 import requests
-from highscoresbotapi import HighscoresbotAPI
 from discord.ext.commands import Command
-
+from asgiref.sync import sync_to_async
+from db.highscores.models import Highscore, HighscoreConfig
 from commands.interractions.highscore_command import HighscoreCommand
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.interractions.selectsview import SelectsView
@@ -13,6 +13,10 @@ from commands.sendable import Sendable
 from commands.utils.utils import joinmessages, tablify
 from config import Config
 
+
+async def get_highscore_config(highscorename):
+    func = sync_to_async(HighscoreConfig.objects.get)
+    return await func(highscorename=highscorename)
 
 
 async def getdefaultclanname(interaction, comment=True) -> Union[str, None]:
@@ -118,23 +122,30 @@ async def highscore(sendable: Sendable, clanname: str=None):
     await sendable.send(content=f"page {view.currentpage} of {view.maxpage}", view=view)
 
 
+
+
+
+
 async def mapcontrol(sendable: Sendable, clanname: str=None):
     """
     shows the standings of all mapcontrol areas.
     :param ctx: discord context
     :param clanname: the name of the clan, optional.
     """
-    HighscoresbotAPI().makeGetRequest()
+
     if clanname is None:
         clanname = ""
+    mapcontrolhighscores = ["ancientcavemapcontrol", "battlezonemapcontrol", "safarizonemapcontrol"]
     messages = []
-    for highscore, area in mapcontrolhighscores:
-        highscore = highscore()
-        values = tablify(highscore.LAYOUT, highscore.getDbValues(
-            query=f"SELECT * FROM {highscore.NAME} WHERE rank < 10 or clan=?",
-            clan=clanname.lower()))
-        messages.append(area)
-        messages += values
-    messages = joinmessages(messages)
-    view = ResultmessageShower(messages, sendable)
-    await sendable.send(messages[0], view=view)
+    for highscorename in mapcontrolhighscores:
+        highscoreconfig = await get_highscore_config(highscorename)
+        async for thing in Highscore.objects.filter(highscore=highscoreconfig):
+            print(thing.rank)
+       # print(w)
+        # print(w)
+       # print(await qs())
+        # for i in qs:
+        #     print(i)
+    # messages = joinmessages(messages)
+    # view = ResultmessageShower(messages, sendable)
+    # await sendable.send(messages[0], view=view)

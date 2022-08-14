@@ -1,6 +1,7 @@
 import os
 import traceback
 from dotenv import load_dotenv
+from db import init_django
 import discord
 from discord import Forbidden, NotFound
 from discord.ext import commands
@@ -8,6 +9,8 @@ from discord.ext.commands import Context, CommandNotFound, CommandInvokeError, N
 
 
 load_dotenv()
+init_django()
+
 
 class Main(commands.Bot):
     def __init__(self):
