@@ -1,12 +1,6 @@
-import asyncio
-import csv
 import sqlite3
 import datetime
-from typing import Union, List
-
-import discord
-from PIL import Image
-from discord.ext.commands import Context
+from typing import List
 from numpy import isnan
 
 

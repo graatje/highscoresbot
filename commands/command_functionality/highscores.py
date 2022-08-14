@@ -12,6 +12,7 @@ from commands.interractions.top_command import TopCommand
 from commands.sendable import Sendable
 from commands.utils.utils import joinmessages, tablify
 from config import Config
+from utils.tablify_dict import tablify_dict
 
 
 async def get_highscore_config(highscorename):
@@ -139,13 +140,11 @@ async def mapcontrol(sendable: Sendable, clanname: str=None):
     messages = []
     for highscorename in mapcontrolhighscores:
         highscoreconfig = await get_highscore_config(highscorename)
-        async for thing in Highscore.objects.filter(highscore=highscoreconfig):
-            print(thing.rank)
-       # print(w)
-        # print(w)
-       # print(await qs())
-        # for i in qs:
-        #     print(i)
-    # messages = joinmessages(messages)
-    # view = ResultmessageShower(messages, sendable)
-    # await sendable.send(messages[0], view=view)
+        qs = Highscore.objects.filter(highscore=highscoreconfig, rank__lt=10).order_by('rank') | \
+             Highscore.objects.filter(highscore=highscoreconfig, data__clan=clanname).order_by('rank')
+
+        messages += tablify_dict([value.to_json() async for value in qs])
+    messages = joinmessages(messages)
+    view = ResultmessageShower(messages, sendable)
+    await sendable.send(messages[0], view=view)
+

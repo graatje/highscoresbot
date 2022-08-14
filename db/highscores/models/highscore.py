@@ -13,3 +13,8 @@ class Highscore(models.Model):
         constraints = [
             UniqueConstraint(fields=["rank", "highscore"], name='unique_highscoreranks'),
         ]
+
+    def to_json(self):
+        result = {"rank": self.rank}
+        result.update(dict(self.data))
+        return result
