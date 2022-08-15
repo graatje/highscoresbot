@@ -17,6 +17,9 @@ async def get_highscore_config(highscorename):
     return await func(highscorename=highscorename)
 
 
+
+
+
 async def getdefaultclanname(interaction, comment=True) -> Union[str, None]:
     if interaction.guild is None:
         return
@@ -40,48 +43,42 @@ async def getplayer(sendable: Sendable, username: str):
     :param ctx: discord context
     :param username: the name of the player you want info from.
     """
-    \
-    allmessages = []
-    for playerhighscore in playerresp.json():
-        fieldmapping = highscoresrespjson[playerhighscore["highscore"]]
-        layout = ["Rank"]
-        values = [str(playerhighscore["rank"])]
-        for key, value in fieldmapping.items():
-            layout.append(str(value))
-            values.append(str(playerhighscore[key]))
-        allmessages.append(tablify(layout, [values])[0])
-    allmessages = joinmessages(allmessages)
+    messages = []
+    async for highscoredata in Highscore.objects.filter(data__username__iexact=username):
+        func = sync_to_async(highscoredata.get_highscore_config)
+        highscoreconfig = await func()
+        messages.append(highscoreconfig.verbose_name)
+        messages += tablify_dict([highscoredata.to_json()], order=["rank", "username", "clan"])
+    messages = joinmessages(messages)
 
-    if len(allmessages) == 0:
+    if len(messages) == 0:
         await sendable.send("or {0} is not in any highscore or he does not exist.".format(username))
     else:
-        view = ResultmessageShower(allmessages, sendable)
-        await sendable.send(allmessages[0], view=view)
+        view = ResultmessageShower(messages, sendable)
+        await sendable.send(messages[0], view=view)
 
 
 async def getclan(sendable: Sendable, clanname: str):
-    clanname = clanname.lower()
-    getclanhighscores = [(SafariMapcontrol, "Safari zone mapcontrol"),
-                         (AncMapcontrol, "Ancient cave mapcontrol"),
-                         (BzMapcontrol, "Battle zone mapcontrol"),
-                         (BestClans, "Top clan experience"),
-                         (RichestClans, "Top richest clans")]
-    allmessages = []
-    for highscore, name in getclanhighscores:
-        highscore = highscore()
-        values = highscore.getDbValues(f"SELECT * FROM {highscore.NAME}")
-        for i in values:
-            if i[1] == clanname:
-                allmessages.append(name)
-                allmessages += tablify(highscore.LAYOUT, [i])
-                break
-    allmessages = joinmessages(allmessages)
-    if not allmessages:
+    highscores = ["ancientcavemapcontrol", "battlezonemapcontrol", "safarizonemapcontrol", "toprichestclans",
+                  "clanwarwins", "topstrongestclans"]
+    messages = []
+    for highscorename in highscores:
+        highscoreconfig = await get_highscore_config(highscorename)
+
+        qs = Highscore.objects.filter(highscore=highscoreconfig, data__clan__iexact=clanname).order_by('rank')
+        values = [value.to_json() async for value in qs]
+        if not values:
+            continue
+        messages.append(highscoreconfig.verbose_name)
+        messages += tablify_dict(values,
+                                 verbose_names=dict(highscoreconfig.fieldmapping), order=["rank", "clan"])
+    messages = joinmessages(messages)
+    if not messages:
         await sendable.send(f"The clan {clanname} is not in the highscores or does not exist.")
         return
 
-    view = ResultmessageShower(allmessages, sendable)
-    await sendable.send(allmessages[0], view=view)
+    view = ResultmessageShower(messages, sendable)
+    await sendable.send(messages[0], view=view)
 
 
 async def top(sendable: Sendable, clanname: str=None):

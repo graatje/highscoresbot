@@ -18,3 +18,6 @@ class Highscore(models.Model):
         result = {"rank": self.rank}
         result.update(dict(self.data))
         return result
+
+    def get_highscore_config(self) -> HighscoreConfig:
+        return self.highscore
