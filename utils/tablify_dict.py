@@ -26,6 +26,14 @@ def tablify_dict(dictionary: List[Dict[str, str]], order: Union[List[str], None]
             for key in i.keys():
                 if key not in layout:
                     layout.append(key)
+
+            # removing values that were passed in the 'order' list if they don't exist.
+            removing = []
+            for key in layout:
+                if key not in i:
+                    removing.append(key)
+            while len(removing) != 0:
+                layout.remove(removing.pop())
             layoutSet = True
         temp = []
         for key in layout:

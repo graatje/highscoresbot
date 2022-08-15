@@ -81,22 +81,22 @@ async def getclan(sendable: Sendable, clanname: str):
     await sendable.send(messages[0], view=view)
 
 
-async def top(sendable: Sendable, clanname: str=None):
+async def top(sendable: Sendable, highscorename, clanname: str=None):
     """
     shows top 9 + the provided clan if available.
     :param ctx: discord context
     :param clanname: the clanname, default none, clannamehandler gets clan from db if none.
     """
-    highscoresdict = {}
-    for highscore in allhighscores:
-        highscore = highscore()
-        highscoresdict[highscore.NAME] = highscore
-
-    def highscoreselectionmaker(highscores):
-        return TopCommand(sendable, highscores, clanname)
-
-    view = SelectsView(sendable, highscoresdict, highscoreselectionmaker)
-    await sendable.send(content=f"page {view.currentpage} of {view.maxpage}", view=view)
+    if clanname is None:
+        clanname = ""
+    highscoreconfig = await get_highscore_config(highscorename)
+    qs = Highscore.objects.filter(highscore=highscoreconfig, rank__lt=10).order_by('rank') | \
+         Highscore.objects.filter(highscore=highscoreconfig, data__clan=clanname).order_by('rank')
+    messages = tablify_dict([value.to_json() async for value in qs],
+                            order=["rank", "username", "clan"],
+                            verbose_names=dict(highscoreconfig.fieldmapping))
+    view = ResultmessageShower(messages, sendable)
+    await sendable.send(messages[0], view=view)
 
 
 async def highscore(sendable: Sendable, clanname: str=None):

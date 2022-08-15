@@ -3,9 +3,21 @@ from typing import Union
 
 from discord import app_commands, Interaction, InteractionResponse
 from discord.ext import commands
-
+from db.highscores.models import Highscore, HighscoreConfig
 from commands.command_functionality import highscores
 from commands.sendable import Sendable
+
+
+async def highscorenameautocomplete(interaction: Interaction, current: str):
+    suggestions = []
+    async for highscoreconfig in HighscoreConfig.objects.filter(verbose_name__contains=current):
+        suggestions.append(app_commands.Choice(name=highscoreconfig.verbose_name,
+                                               value=highscoreconfig.highscorename))
+        if len(suggestions) == 25:
+            break
+
+    suggestions.sort(key=lambda choice: choice.value)
+    return suggestions
 
 
 class Highscores(commands.Cog):
@@ -29,11 +41,12 @@ class Highscores(commands.Cog):
         await highscores.getclan(Sendable(interaction), clanname)
 
     @highscoresgroup.command(name="top")
-    async def top(self, interaction: Interaction, clanname: str=None):
+    @app_commands.autocomplete(highscorename=highscorenameautocomplete)
+    async def top(self, interaction: Interaction, highscorename: str, clanname: str=None):
         sendable = Sendable(interaction)
-        if clanname is None:
-            clanname = await self.getdefaultclanname(sendable, comment=False)
-        await highscores.top(sendable, clanname)
+        # if clanname is None:
+        #     clanname = await self.getdefaultclanname(sendable, comment=False)
+        await highscores.top(sendable, highscorename, clanname)
 
     @highscoresgroup.command(name="highscore")
     async def highscore(self, interaction: Interaction, clanname: str=None):
