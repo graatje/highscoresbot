@@ -1,8 +1,5 @@
 import sqlite3
 from typing import Union, List, Dict
-
-import requests
-from discord.ext.commands import Command
 from asgiref.sync import sync_to_async
 from db.highscores.models import Highscore, HighscoreConfig
 from commands.interractions.highscore_command import HighscoreCommand
@@ -43,12 +40,7 @@ async def getplayer(sendable: Sendable, username: str):
     :param ctx: discord context
     :param username: the name of the player you want info from.
     """
-    playerresp = HighscoresbotAPI().makeGetRequest(Config.api_root + "highscores/highscore/",
-                                             params={"username": username.lower()})
-    highscoresresp = HighscoresbotAPI().makeGetRequest(Config.api_root + "highscores/highscoreconfig/")
-
-    highscoresrespjson: Dict[str, Dict[str, str]] = {highscore["highscorename"]: highscore["fieldmapping"]
-                                                     for highscore in highscoresresp.json()}
+    \
     allmessages = []
     for playerhighscore in playerresp.json():
         fieldmapping = highscoresrespjson[playerhighscore["highscore"]]
@@ -123,10 +115,6 @@ async def highscore(sendable: Sendable, clanname: str=None):
     await sendable.send(content=f"page {view.currentpage} of {view.maxpage}", view=view)
 
 
-
-
-
-
 async def mapcontrol(sendable: Sendable, clanname: str=None):
     """
     shows the standings of all mapcontrol areas.
@@ -143,8 +131,8 @@ async def mapcontrol(sendable: Sendable, clanname: str=None):
         qs = Highscore.objects.filter(highscore=highscoreconfig, rank__lt=10).order_by('rank') | \
              Highscore.objects.filter(highscore=highscoreconfig, data__clan=clanname).order_by('rank')
 
-        messages += tablify_dict([value.to_json() async for value in qs])
+        messages += tablify_dict([value.to_json() async for value in qs],
+                                 verbose_names=dict(highscoreconfig.fieldmapping))
     messages = joinmessages(messages)
     view = ResultmessageShower(messages, sendable)
     await sendable.send(messages[0], view=view)
-
