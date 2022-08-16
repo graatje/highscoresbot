@@ -89,20 +89,18 @@ async def getperms(sendable: Sendable):
     Gets the roles that have permission to adjust eventconfigurations.
     :param ctx: discord context
     """
-    with sqlite3.connect(databasepath) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT roleid FROM permissions WHERE guildid=?", (sendable.guild.id,))
-        result = cur.fetchall()
-    message = ""
-    for role in result:
-        role = sendable.guild.get_role(int(role[0]))
+    "(Role ID)>"
+    roleids = [config.role async for config in EventconfigPermissions.objects.filter(guild=sendable.guild.id)]
+    if not roleids:
+        await sendable.send("no permissions set.")
+        return
+    message = "```\n"
+    for roleid in roleids:
+        role = sendable.guild.get_role(roleid)
         if role is not None:
             message += str(role) + "\n"
-    message = escape_mentions(message)
-    if message != "":
-        await sendable.send(message)
-    else:
-        await sendable.send("no permissions set.")
+    message += "\n```"
+    await sendable.send(message)
 
 
 async def register(sendable: Sendable, channel: discord.TextChannel = None):
