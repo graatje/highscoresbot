@@ -10,7 +10,8 @@ from commands.sendable import Sendable
 
 async def highscorenameautocomplete(interaction: Interaction, current: str):
     suggestions = []
-    async for highscoreconfig in HighscoreConfig.objects.filter(verbose_name__contains=current):
+    async for highscoreconfig in HighscoreConfig.objects.filter(verbose_name__icontains=current).\
+            order_by('verbose_name'):
         suggestions.append(app_commands.Choice(name=highscoreconfig.verbose_name,
                                                value=highscoreconfig.highscorename))
         if len(suggestions) == 25:
