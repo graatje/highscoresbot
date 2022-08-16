@@ -9,6 +9,7 @@ from commands.interractions.ingame_events.getrolls import GetRolls
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import tablify, getworldbosstime
+from db.highscores.models import Highscore
 from db.ingame_data.models import Encounter, Chest, Roll
 from highscores import getClanList
 from utils.tablify_dict import tablify_dict
@@ -127,26 +128,19 @@ async def getrolls(sendable: Sendable, searchtype, parameter: str=None):
 
 
 async def getclanencounters(sendable: Sendable, clanname: str):
-    clanname = clanname.lower()
-    conn = sqlite3.connect(PathManager().getpath(r"ingame_data.db"))
-    cur = conn.cursor()
-
-    clanlist = getClanList(clanname.lower())
-    totalencounters = []
-    for player in clanlist:
-        cur.execute("SELECT Name, Encounters, Date FROM Encounters WHERE Name = ?", (player,))
-        [totalencounters.append(row) for row in cur.fetchall()]
-    totalencounters.sort(key=lambda x: x[2])
-    resultmessages = tablify(["name", "pokemon", "date"], totalencounters, maxlength=1200)
-    resultmessageshower = ResultmessageShower(resultmessages[::-1], sendable)
+    usernames = set([value.data["username"] async for value in
+                 Highscore.objects.filter(data__clan__iexact=clanname, data__has_key="username")])
+    values = [value.to_json() async for value in Encounter.objects.filter(playername__in=usernames).order_by("-date")]
+    messages = tablify_dict(values, order=["date", "playername", "pokemon"], max_length=1800)
+    resultmessageshower = ResultmessageShower(messages, sendable)
     await sendable.send(
-        content=f"page {resultmessageshower.currentpage} of {resultmessageshower.maxpage}\n" +
-                resultmessages[-1],
+        content=f"page {resultmessageshower.currentpage} of {resultmessageshower.maxpage}\n" + messages[0],
         view=resultmessageshower)
 
 
 async def worldbosstime(sendable: Sendable):
     """
+    @todo unity will impact this.
     gives the time untill the start of the worldboss.
     :param ctx: discord context
     """
