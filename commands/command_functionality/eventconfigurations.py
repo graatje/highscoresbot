@@ -2,9 +2,13 @@ import asyncio
 import re
 
 import discord
+from asgiref.sync import sync_to_async
 from discord import NotFound, Forbidden, app_commands, Interaction
 from discord.ext import commands
 import sqlite3
+
+from django.db import IntegrityError
+
 from commands.interractions.eventconfig.register import Register
 from commands.interractions.playerconfig.playerconfig import PlayerConfig
 from commands.interractions.playerconfig.removememberconfig import RemoveMemberConfig
@@ -14,6 +18,9 @@ from commands.sendable import Sendable
 from commands.utils.utils import haspermissions, tablify
 from discord.utils import escape_mentions, MISSING
 from typing import Union
+
+from db.config.models import Eventname
+from db.eventconfigurations.models import EventconfigPermissions
 
 databasepath = "./eventconfigurations.db"
 
@@ -26,17 +33,8 @@ async def __eventnamecheck(sendable: Sendable, eventname: str) -> bool:
     :param eventname: the eventname.
     :return boolean, True if the eventname is valid.
     """
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
-    cur.execute("SELECT eventname FROM eventnames WHERE eventname=?", (eventname,))
-    result = cur.fetchall()
-    if len(result) == 0:
-        cur.execute("SELECT eventname FROM eventnames")
-        eventnames = [row[0] for row in cur.fetchall()]
-        conn.close()
-        await sendable.send(f"invalid eventname '{eventname}'! Possible events:\n" + ", ".join(eventnames))
-        return False
-    conn.close()
+    func = sync_to_async(Eventname.objects.get)
+    await func(name__iexact=eventname)
     return True
 
 
@@ -51,12 +49,16 @@ async def setperms(sendable: Sendable, role: discord.Role):
     if not sendable.user.guild_permissions.administrator:
         await sendable.send("only administrators can use this command!")
         return
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
-    cur.execute("INSERT INTO permissions(guildid, roleid) VALUES(?,?)", (sendable.guild.id, role.id))
-    conn.commit()
-    conn.close()
-    await sendable.send("role successfully given permissions.")
+
+    func = sync_to_async(EventconfigPermissions.objects.create)
+    try:
+        await func(guild=sendable.guild.id, role=role.id)
+        await sendable.send("role successfully given permissions.")
+    except IntegrityError:
+        await sendable.send("role already had permissions.")
+    except Exception as e:
+        await sendable.send("unknown error.")
+        raise e
 
 
 async def removeperms(sendable: Sendable, role: discord.Role):
@@ -66,14 +68,20 @@ async def removeperms(sendable: Sendable, role: discord.Role):
     :param ctx: discord context
     :param role: the role id or the role mention. Union[int, str]
     """
-    with sqlite3.connect(databasepath) as conn:
-        cur = conn.cursor()
-        result = cur.execute("DELETE FROM permissions WHERE guildid=? AND roleid=?", (sendable.guild.id, role.id))
-        conn.commit()
-    if result.rowcount:
+    if not sendable.user.guild_permissions.administrator:
+        await sendable.send("only administrators can use this command!")
+        return
+    func = sync_to_async(EventconfigPermissions.objects.get)
+    try:
+        obj = await func(guild=sendable.guild.id, role=role.id)
+        deletefunc = sync_to_async(obj.delete)
+        await deletefunc()
         await sendable.send("Role successfully removed from permissions.")
-    else:
+    except EventconfigPermissions.DoesNotExist:
         await sendable.send("that role had no permissions.")
+    except Exception as e:
+        await sendable.send("unknown exception occured.")
+        raise e
 
 
 async def getperms(sendable: Sendable):
