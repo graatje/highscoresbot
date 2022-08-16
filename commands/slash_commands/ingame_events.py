@@ -18,6 +18,21 @@ async def getencountersautocomplete(interaction, current: str):
     return suggestions
 
 
+async def getchestsautocomplete(interaction, current: str):
+    suggestions = [
+        app_commands.Choice(name="location", value="location"),
+        app_commands.Choice(name="date", value="date"),
+        app_commands.Choice(name="player", value="player"),
+        app_commands.Choice(name="top dates", value="topdates"),
+        app_commands.Choice(name="top locations", value="toplocations"),
+        app_commands.Choice(name="top players", value="topplayers"),
+    ]
+
+    if current is not None:
+        suggestions = [suggestion for suggestion in suggestions if current.lower() in suggestion.name]
+    return suggestions
+
+
 class IngameEvents(commands.Cog):
     def __init__(self, client: commands.bot):
         self.client: commands.bot = client
@@ -37,9 +52,10 @@ class IngameEvents(commands.Cog):
         await ingame_events.getencounters(sendable, searchtype, name)
 
     @ingameeventsgroup.command(name="getchests")
-    async def getchests(self, interaction: Interaction, argument: str):
+    @app_commands.autocomplete(searchtype=getchestsautocomplete)
+    async def getchests(self, interaction: Interaction, searchtype: str, argument: str = None):
         sendable = Sendable(interaction)
-        await ingame_events.getchests(sendable, argument)
+        await ingame_events.getchests(sendable, searchtype, argument)
 
     @ingameeventsgroup.command(name="getrolls")
     async def getrolls(self, interaction: Interaction, parameter: str):

@@ -9,7 +9,7 @@ from commands.interractions.ingame_events.getrolls import GetRolls
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import tablify, getworldbosstime
-from db.ingame_data.models import Encounter
+from db.ingame_data.models import Encounter, Chest
 from highscores import getClanList
 from utils.tablify_dict import tablify_dict
 
@@ -61,17 +61,37 @@ async def getencounters(sendable: Sendable, searchtype, name: str=None):
     else:
         raise ValueError(f"invalid searchtype: {searchtype}")
     values = [value async for value in qs]
-    if values and hasattr(values, "to_json"):
+    if values and hasattr(values[0], "to_json"):
         values = [value.to_json() for value in values]
     messages = tablify_dict(values)
     await sendable.send(content=messages[0],
                          view=ResultmessageShower(messages, sendable))
 
 
-async def getchests(sendable: Sendable, argument: str):
-    name = argument.lower()
-    await sendable.send("is that a location, date, or player? Press the button to get a response! ",
-                                            view=GetChests(sendable, name))
+async def getchests(sendable: Sendable, searchtype, argument: str=None):
+    if searchtype == "topdates":
+        qs = Chest.objects.values('date').annotate(count=Count('date')).order_by('-count')
+    elif searchtype == "topplayers":
+        qs = Chest.objects.values('playername').annotate(count=Count('playername')).order_by('-count')
+    elif searchtype == "toplocations":
+        qs = Chest.objects.values('location').annotate(count=Count('location')).order_by('-count')
+    elif argument is None:
+        await sendable.send("Please provide an argument or pick another searchtype!")
+        return
+    elif searchtype == "location":
+        qs = Chest.objects.filter(location__iexact=argument).order_by("date")
+    elif searchtype == "date":
+        qs = Chest.objects.filter(date=argument)
+    elif searchtype == "player":
+        qs = Chest.objects.filter(playername__iexact=argument).order_by("date")
+    else:
+        raise ValueError(f"invalid searchtype: {searchtype}")
+    values = [value async for value in qs]
+    if values and hasattr(values[0], "to_json"):
+        values = [value.to_json() for value in values]
+    messages = tablify_dict(values)
+    await sendable.send(content=messages[0],
+                        view=ResultmessageShower(messages, sendable))
 
 
 async def getrolls(sendable: Sendable, parameter: str):
