@@ -2,15 +2,16 @@ import datetime
 import sqlite3
 
 import discord
+from django.db.models import Count
 
 from commands.interractions.ingame_events.getchests import GetChests
-from commands.interractions.ingame_events.getencounters import GetEncounters
 from commands.interractions.ingame_events.getrolls import GetRolls
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import tablify, getworldbosstime
+from db.ingame_data.models import Encounter
 from highscores import getClanList
-
+from utils.tablify_dict import tablify_dict
 
 
 async def lastonline(sendable: Sendable, playername: str):
@@ -36,15 +37,35 @@ async def lastonline(sendable: Sendable, playername: str):
         await sendable.send(f"{playername} was last online at {str(online).split(' ')[0]}")
 
 
-async def getencounters(sendable: Sendable, name: str):
+async def getencounters(sendable: Sendable, searchtype, name: str=None):
     """
     gets the encounters
     :param ctx: message context
     :param name: either playername, pokemonname or a date
     """
-    name = name.lower()
-    await sendable.send(content="is that a pokemon, date, or player? Press the button to get a response!",
-                         view=GetEncounters(sendable, name))
+    if searchtype == "topdates":
+        qs = Encounter.objects.values('date').annotate(count=Count('date')).order_by('-count')
+    elif searchtype == "topplayers":
+        qs = Encounter.objects.values('playername').annotate(count=Count('playername')).order_by('-count')
+    elif searchtype == "toppokemon":
+        qs = Encounter.objects.values('pokemon').annotate(count=Count('pokemon')).order_by('-count')
+    elif name is None:
+        await sendable.send("Please provide an argument or pick another searchtype!")
+        return
+    elif searchtype == "pokemon":
+        qs = Encounter.objects.filter(pokemon__iexact=name).order_by("date")
+    elif searchtype == "date":
+        qs = Encounter.objects.filter(date=name)
+    elif searchtype == "player":
+        qs = Encounter.objects.filter(playername__iexact=name).order_by("date")
+    else:
+        raise ValueError(f"invalid searchtype: {searchtype}")
+    values = [value async for value in qs]
+    if values and hasattr(values, "to_json"):
+        values = [value.to_json() for value in values]
+    messages = tablify_dict(values)
+    await sendable.send(content=messages[0],
+                         view=ResultmessageShower(messages, sendable))
 
 
 async def getchests(sendable: Sendable, argument: str):

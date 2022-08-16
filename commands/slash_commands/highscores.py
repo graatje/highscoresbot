@@ -16,8 +16,6 @@ async def highscorenameautocomplete(interaction: Interaction, current: str):
                                                value=highscoreconfig.highscorename))
         if len(suggestions) == 25:
             break
-
-    suggestions.sort(key=lambda choice: choice.value)
     return suggestions
 
 
