@@ -1,14 +1,11 @@
 import sqlite3
-from typing import Union, List, Dict
+from typing import Union
 from asgiref.sync import sync_to_async
 from db.highscores.models import Highscore, HighscoreConfig
 from commands.interractions.highscore_command import HighscoreCommand
 from commands.interractions.resultmessageshower import ResultmessageShower
-from commands.interractions.selectsview import SelectsView
-from commands.interractions.top_command import TopCommand
 from commands.sendable import Sendable
-from commands.utils.utils import joinmessages, tablify
-from config import Config
+from commands.utils.utils import joinmessages
 from utils.tablify_dict import tablify_dict
 
 
@@ -17,10 +14,8 @@ async def get_highscore_config(highscorename):
     return await func(highscorename=highscorename)
 
 
-
-
-
 async def getdefaultclanname(interaction, comment=True) -> Union[str, None]:
+    # @todo default clan, it is not in the ORM yet either.
     if interaction.guild is None:
         return
     conn = sqlite3.connect("highscores.db")
@@ -91,7 +86,7 @@ async def top(sendable: Sendable, highscorename, clanname: str=None):
         clanname = ""
     highscoreconfig = await get_highscore_config(highscorename)
     qs = Highscore.objects.filter(highscore=highscoreconfig, rank__lt=10).order_by('rank') | \
-         Highscore.objects.filter(highscore=highscoreconfig, data__clan=clanname).order_by('rank')
+         Highscore.objects.filter(highscore=highscoreconfig, data__clan__iexact=clanname).order_by('rank')
     messages = tablify_dict([value.to_json() async for value in qs],
                             order=["rank", "username", "clan"],
                             verbose_names=dict(highscoreconfig.fieldmapping))
@@ -119,7 +114,7 @@ async def mapcontrol(sendable: Sendable, clanname: str=None):
     for highscorename in mapcontrolhighscores:
         highscoreconfig = await get_highscore_config(highscorename)
         qs = Highscore.objects.filter(highscore=highscoreconfig, rank__lt=10).order_by('rank') | \
-             Highscore.objects.filter(highscore=highscoreconfig, data__clan=clanname).order_by('rank')
+             Highscore.objects.filter(highscore=highscoreconfig, data__clan__iexact=clanname).order_by('rank')
 
         messages += tablify_dict([value.to_json() async for value in qs],
                                  verbose_names=dict(highscoreconfig.fieldmapping))
