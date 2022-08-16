@@ -2,7 +2,8 @@ import datetime
 import sqlite3
 
 import discord
-from django.db.models import Count
+from asgiref.sync import sync_to_async
+from django.db.models import Count, Max
 
 from commands.interractions.ingame_events.getchests import GetChests
 from commands.interractions.ingame_events.getrolls import GetRolls
@@ -10,35 +11,24 @@ from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import tablify, getworldbosstime
 from db.highscores.models import Highscore
-from db.ingame_data.models import Encounter, Chest, Roll
+from db.ingame_data.models import Encounter, Chest, Roll, Activity
 from highscores import getClanList
 from utils.tablify_dict import tablify_dict
 
 
-async def lastonline(sendable: Sendable, playername: str):
-    if playername is None:
-        with sqlite3.connect(PathManager().getpath("ingame_data.db")) as conn:
-            cur = conn.cursor()
-            cur.execute("SELECT max(timestamp) FROM activity")
-            online = datetime.datetime.fromtimestamp(cur.fetchall()[0][0], datetime.timezone.utc)
-            await sendable.send(
-                f"last online check was at {online}. Give a playername with the command to see what"
-                f"date the player was last online.")
-        return
-    playername = playername.lower()
-    with sqlite3.connect(PathManager().getpath("ingame_data.db")) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT timestamp FROM activity WHERE playername=?", (playername,))
-        try:
-            timestamp = cur.fetchall()[0][0]
-        except IndexError:
-            await sendable.send(f"no information about last online of {playername}")
-            return
-        online = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
-        await sendable.send(f"{playername} was last online at {str(online).split(' ')[0]}")
+async def lastonline(sendable: Sendable, playername: str=None):
+    if playername is not None:
+        func = sync_to_async(Activity.objects.get)
+        activity_obj: Activity = await func(playername__iexact=playername)
+        await sendable.send(f"{activity_obj.playername} was last online at {activity_obj.get_lastonline()}")
+    else:
+        func = sync_to_async(Activity.objects.aggregate)
+        highest_lastonline = await func(Max('lastonline'))
+        highest_lastonline = highest_lastonline["lastonline__max"]
+        await sendable.send(f"last online check was at <t:{int(highest_lastonline.timestamp())}>")
 
 
-async def getencounters(sendable: Sendable, searchtype, name: str=None):
+async def getencounters(sendable: Sendable, searchtype: str, name: str=None):
     """
     gets the encounters
     :param ctx: message context
