@@ -49,9 +49,10 @@ class Highscores(commands.Cog):
         await highscores.top(sendable, highscorename, clanname)
 
     @highscoresgroup.command(name="highscore")
-    async def highscore(self, interaction: Interaction, clanname: str=None):
+    @app_commands.autocomplete(highscorename=highscorenameautocomplete)
+    async def highscore(self, interaction: Interaction, highscorename: str, clanname: str=None):
         sendable = Sendable(interaction)
-        await highscores.highscore(sendable, clanname)
+        await highscores.highscore(sendable, highscorename, clanname)
 
     @highscoresgroup.command(name="mapcontrol")
     async def mapcontrol(self, interaction: Interaction, clanname: str=None):

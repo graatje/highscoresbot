@@ -99,17 +99,10 @@ async def top(sendable: Sendable, highscorename, clanname: str=None):
     await sendable.send(messages[0], view=view)
 
 
-async def highscore(sendable: Sendable, clanname: str=None):
-    initializedhighscores = {}
-    for highscore in allhighscores:
-        highscore = highscore()
-        initializedhighscores[highscore.NAME] = highscore
-
-    def highscoreselectionmaker(highscores):
-        return HighscoreCommand(sendable, highscores, clanname=clanname)
-
-    view = SelectsView(sendable, initializedhighscores.keys(), highscoreselectionmaker)
-    await sendable.send(content=f"page {view.currentpage} of {view.maxpage}", view=view)
+async def highscore(sendable: Sendable, highscorename: str, clanname: str=None):
+    view = HighscoreCommand(sendable, highscorename, clanname)
+    await view.init()
+    await sendable.send(await view.getPage(), view=view)
 
 
 async def mapcontrol(sendable: Sendable, clanname: str=None):

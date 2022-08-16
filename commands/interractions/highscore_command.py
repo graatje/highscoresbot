@@ -1,39 +1,54 @@
-from typing import List
+from abc import ABC
 import discord
+from asgiref.sync import sync_to_async
 from discord import Interaction
-from discord.ext.commands import Context
 
-from commands.interractions.resultmessageshower import ResultmessageShower
-from commands.interractions.selectsutility import SelectsUtility
-from commands.utils.utils import tablify
-from highscores import allhighscores
+from commands.interractions.browseselection import BrowseSelection
+from db.highscores.models import HighscoreConfig, Highscore
+from utils.tablify_dict import tablify_dict
 
 
-class HighscoreCommand(SelectsUtility):
-    def __init__(self, interaction: Interaction, highscores: List[str], clanname: str=None):
+class HighscoreCommand(BrowseSelection, ABC):
+    def __init__(self, interaction: Interaction, highscorename, clanname: str=None):
         """
         creates a selectsutility for the highscore command.
         :param ctx:
         :param highscores: the options. max 25.
         """
-        super().__init__(interaction=interaction, options=highscores, max_selectable=1, min_selectable=1,
-                         placeholder="select the highscore you want to see")
-        self.highscores = highscores
+        super(HighscoreCommand, self).__init__(pagesamount=float('inf'),
+                                               interaction=interaction, ownerOnly=True)
+        self.highscoreName = highscorename
+        self.highscoreConfig = None
         self.clanname = clanname
+        self.PAGE_SIZE = 20
 
-    async def callback(self, interaction: discord.Interaction):
-        """
-        what happens on select.
-        :param interaction:
-        :return:
-        """
-        highscorename = self.values[0]
-        for highscore in allhighscores:
-            highscore = highscore()
-            if highscore.NAME == highscorename:
-                break
+    async def init(self):
+        func = sync_to_async(HighscoreConfig.objects.get)
+        self.highscoreConfig = await func(highscorename=self.highscoreName)
+        if self.clanname is not None:
+            qs = Highscore.objects.filter(highscore=self.highscoreConfig,
+                                          data__clan__iexact=self.clanname).order_by("rank")
+            tablified = tablify_dict([value.to_json() async for value in qs],
+                                     order=["rank", "username", "clan"],
+                                     verbose_names=dict(self.highscoreConfig.fieldmapping))
+            self.maxpage = len(tablified)
         else:
-            raise ValueError(f"Highscore {highscorename} does not exist!!")
-        messages = tablify(highscore.LAYOUT, highscore.getDbValues(clan=self.clanname), maxlength=1300)
-        await interaction.response.send_message(content=messages[0],
-                                                view=ResultmessageShower(messages, interaction=interaction))
+            self.maxpage = self.highscoreConfig.pagesamount * 100 / self.PAGE_SIZE
+
+    async def _sendPage(self, interaction: discord.Interaction):
+
+        await interaction.response.edit_message(content=await self.getPage(), view=self)
+
+    async def getPage(self) -> str:
+        if self.clanname is None:
+            qs = Highscore.objects.filter(highscore=self.highscoreConfig,
+                                          rank__range=((self.currentpage - 1) * self.PAGE_SIZE, self.currentpage * self.PAGE_SIZE)).order_by("rank")
+        else:
+            qs = Highscore.objects.filter(highscore=self.highscoreConfig,
+                                          data__clan__iexact=self.clanname).order_by("rank")
+        tablified = tablify_dict([value.to_json() async for value in qs],
+                            order=["rank", "username", "clan"],
+                            verbose_names=dict(self.highscoreConfig.fieldmapping))
+        if self.clanname is not None:
+            return tablified[self.currentpage-1]
+        return tablified[0]
