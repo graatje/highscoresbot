@@ -9,7 +9,7 @@ from commands.interractions.ingame_events.getrolls import GetRolls
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import tablify, getworldbosstime
-from db.ingame_data.models import Encounter, Chest
+from db.ingame_data.models import Encounter, Chest, Roll
 from highscores import getClanList
 from utils.tablify_dict import tablify_dict
 
@@ -94,16 +94,36 @@ async def getchests(sendable: Sendable, searchtype, argument: str=None):
                         view=ResultmessageShower(messages, sendable))
 
 
-async def getrolls(sendable: Sendable, parameter: str):
+async def getrolls(sendable: Sendable, searchtype, parameter: str=None):
     """
     Gets the rolls of a player, the rolls of a pokemon, or the rolls on a specific date.
     Timeout is 10 minutes, then the message gets deleted.
     :param ctx: discord context
     :param parameter: The pokemon, date or player
     """
-    parameter = parameter.lower()
-    await sendable.send(content="is that a pokemon, date, or player? Press the button to get a response! ",
-                   view=GetRolls(sendable, parameter))
+    if searchtype == "topdates":
+        qs = Roll.objects.values('date').annotate(count=Count('date')).order_by('-count')
+    elif searchtype == "topplayers":
+        qs = Roll.objects.values('playername').annotate(count=Count('playername')).order_by('-count')
+    elif searchtype == "toppokemon":
+        qs = Roll.objects.values('pokemon').annotate(count=Count('pokemon')).order_by('-count')
+    elif parameter is None:
+        await sendable.send("Please provide an argument or pick another searchtype!")
+        return
+    elif searchtype == "pokemon":
+        qs = Roll.objects.filter(pokemon__iexact=parameter).order_by("date")
+    elif searchtype == "date":
+        qs = Roll.objects.filter(date=parameter)
+    elif searchtype == "player":
+        qs = Roll.objects.filter(playername__iexact=parameter).order_by("date")
+    else:
+        raise ValueError(f"invalid searchtype: {searchtype}")
+    values = [value async for value in qs]
+    if values and hasattr(values[0], "to_json"):
+        values = [value.to_json() for value in values]
+    messages = tablify_dict(values)
+    await sendable.send(content=messages[0],
+                        view=ResultmessageShower(messages, sendable))
 
 
 async def getclanencounters(sendable: Sendable, clanname: str):

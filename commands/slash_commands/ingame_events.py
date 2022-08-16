@@ -4,7 +4,7 @@ from commands.command_functionality import ingame_events
 from commands.sendable import Sendable
 
 
-async def getencountersautocomplete(interaction, current: str):
+async def getpokemonsearchtypeautocomplete(interaction, current: str):
     suggestions = [
         app_commands.Choice(name="pokemon", value="pokemon"),
         app_commands.Choice(name="date", value="date"),
@@ -46,7 +46,7 @@ class IngameEvents(commands.Cog):
         await ingame_events.lastonline(sendable, playername)
 
     @ingameeventsgroup.command(name="getencounters")
-    @app_commands.autocomplete(searchtype=getencountersautocomplete)
+    @app_commands.autocomplete(searchtype=getpokemonsearchtypeautocomplete)
     async def getencounters(self, interaction: Interaction, searchtype: str, name: str = None):
         sendable = Sendable(interaction)
         await ingame_events.getencounters(sendable, searchtype, name)
@@ -58,9 +58,10 @@ class IngameEvents(commands.Cog):
         await ingame_events.getchests(sendable, searchtype, argument)
 
     @ingameeventsgroup.command(name="getrolls")
-    async def getrolls(self, interaction: Interaction, parameter: str):
+    @app_commands.autocomplete(searchtype=getpokemonsearchtypeautocomplete)
+    async def getrolls(self, interaction: Interaction, searchtype: str, parameter: str = None):
         sendable = Sendable(interaction)
-        await ingame_events.getrolls(sendable, parameter)
+        await ingame_events.getrolls(sendable, searchtype, parameter)
 
     @ingameeventsgroup.command(name="getclanencounters")
     async def getclanencounters(self, interaction: Interaction, clanname: str):
