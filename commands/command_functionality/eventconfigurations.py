@@ -20,7 +20,7 @@ from discord.utils import escape_mentions, MISSING
 from typing import Union
 
 from db.config.models import Eventname
-from db.eventconfigurations.models import EventconfigPermissions
+from db.eventconfigurations.models import EventconfigPermissions, Eventconfiguration, Clanconfig
 
 databasepath = "./eventconfigurations.db"
 
@@ -37,6 +37,12 @@ async def __eventnamecheck(sendable: Sendable, eventname: str) -> bool:
     await func(name__iexact=eventname)
     return True
 
+async def getEventObject(eventname):
+    try:
+        func = sync_to_async(Eventname.objects.get)
+        return await func(name=eventname)
+    except Eventname.DoesNotExist:
+        return None
 
 
 async def setperms(sendable: Sendable, role: discord.Role):
@@ -140,14 +146,15 @@ async def settime(sendable: Sendable, eventname: str, time: int = None):
     except ValueError:
         await sendable.send("please provide a valid time!")
         return
-    if not await __eventnamecheck(sendable, eventname):
-        return
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
-    cur.execute("UPDATE eventconfig SET alivetime=? WHERE guildid=? AND eventname=?",
-                (time, sendable.guild.id, eventname))
-    conn.commit()
-    conn.close()
+    # if not await __eventnamecheck(sendable, eventname):
+    #     return
+    event = await getEventObject(eventname)
+
+    func = sync_to_async(Eventconfiguration.objects.get)
+    eventconfig = await func(eventname=event, guild=sendable.guild.id)
+    eventconfig.time_in_channel = time
+    savefunc = sync_to_async(eventconfig.save)
+    await savefunc()
     if time is not None:
         await sendable.send(f"messages for the {eventname} event will be removed after {time} minutes. "
                        f"Note that the event must first be registered in the clan for it to have an effect.")
@@ -156,49 +163,43 @@ async def settime(sendable: Sendable, eventname: str, time: int = None):
 
 
 async def getclanregistrations(sendable: Sendable):
-    with sqlite3.connect(databasepath) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT clan FROM clanconfig WHERE guildid=?", (sendable.guild.id,))
-        clans = list(set([row[0] for row in cur.fetchall()]))
+    clans = [clanconfig.clan async for clanconfig in Clanconfig.objects.filter(guild=sendable.guild.id)]
     await sendable.send("The following clans have been registered for this server:\n" + "\n".join(clans))
 
 
 async def showregistrations(sendable: Sendable, client: discord.Client):
-    with sqlite3.connect(databasepath) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT eventname, channel, pingrole, alivetime FROM eventconfig WHERE guildid=?",
-                    (sendable.guild.id,))
-        result = cur.fetchall()
-    result = [list(row) for row in result]
-    for row in result:
-        if row[1] is not None:
+    eventconfigs = [eventconfig async for eventconfig in Eventconfiguration.objects.filter(guild=sendable.guild.id)]
+    result = []
+    for eventconfig in eventconfigs:
+        # getting channel name
+        if eventconfig.channel is not None:
             try:
-                chan = await client.fetch_channel(row[1])
-                chan = str(chan)
+                channel = await client.fetch_channel(eventconfig.channel)
+                channel = str(channel)
             except NotFound:
-                chan = "not found"
+                channel = "not found"
             except Forbidden:
-                chan = "no permissions"
+                channel = "no permissions"
             except Exception as e:
                 print(e)
-                chan = "unknown"
+                channel = "unknown"
         else:
-            chan = "not available"
-        row[1] = chan
+            channel = "not available"
 
-        if row[2] is not None:
+        # getting rolename
+        if eventconfig.pingrole is not None:
             try:
-                role = sendable.guild.get_role(int(row[2]))
+                role = str(sendable.guild.get_role(eventconfig.pingrole))
             except Exception as e:
                 print("fetching role failed.")
                 print(e)
                 role = "failed to fetch role"
         else:
-            role = None
-        if role is not None:
-            row[2] = str(role)
-        else:
-            row[2] = "not available"
+            role = "not available"
+
+        eventnamefunc = sync_to_async(eventconfig.get_eventname)
+        eventname = await eventnamefunc()
+        result.append((eventname, channel, role, eventconfig.time_in_channel))
     messages = tablify(["eventname", "channel", "pingrole", "alivetime"], result)
     view = MISSING
     if len(messages) > 1:

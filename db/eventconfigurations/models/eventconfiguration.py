@@ -16,3 +16,6 @@ class Eventconfiguration(models.Model):
         constraints = [
             UniqueConstraint(fields=["guild", "eventname"], name='unique_events'),  # one eventannouncement per guild
         ]
+
+    def get_eventname(self):
+        return str(self.eventname)
