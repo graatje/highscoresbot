@@ -1,3 +1,5 @@
+from typing import List
+
 from discord import app_commands, Interaction
 from discord.ext import commands
 from commands.command_functionality import ingame_events

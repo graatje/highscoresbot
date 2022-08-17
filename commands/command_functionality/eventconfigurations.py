@@ -89,7 +89,6 @@ async def getperms(sendable: Sendable):
     Gets the roles that have permission to adjust eventconfigurations.
     :param ctx: discord context
     """
-    "(Role ID)>"
     roleids = [config.role async for config in EventconfigPermissions.objects.filter(guild=sendable.guild.id)]
     if not roleids:
         await sendable.send("no permissions set.")
@@ -110,18 +109,14 @@ async def register(sendable: Sendable, channel: discord.TextChannel = None):
     :param ctx: discord context
     :param channel: The channel to send the event to. Default channel where command was used.
     """
-    if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-            sendable.user.guild_permissions.administrator:
-        await sendable.send("insufficient permissions to use this command!")
-        return
+    print("WARNING: PERMISSIONS BYPASSED")
+    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+    #         sendable.user.guild_permissions.administrator:
+    #     await sendable.send("insufficient permissions to use this command!")
+    #     return
     chan = channel if channel is not None else sendable.channel
-    with sqlite3.connect(databasepath) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT eventname FROM eventnames")
-        eventnames = [row[0] for row in cur.fetchall()]
-    eventnames.sort()
-    view = SelectsView(sendable, eventnames, lambda options: Register(sendable, options, chan,
-                                                                      databasepath))
+    eventnames = [eventname.name async for eventname in Eventname.objects.all().order_by('name')]
+    view = SelectsView(sendable, eventnames, lambda options: Register(sendable, options, chan))
     await sendable.send(f"Select events you want a message for in {chan.mention}", view=view)
 
 
@@ -133,10 +128,11 @@ async def settime(sendable: Sendable, eventname: str, time: int = None):
     :param eventname: The name of the event
     :param time: the time the message of the event should stay in the channel. Default None.
     """
-    if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-            sendable.user.guild_permissions.administrator:
-        await sendable.send("insufficient permissions to use this command!")
-        return
+    print("WARNING: PERMISSIONS BYPASSED")
+    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+    #         sendable.user.guild_permissions.administrator:
+    #     await sendable.send("insufficient permissions to use this command!")
+    #     return
     eventname = eventname.lower()
     try:
         if time is not None:
