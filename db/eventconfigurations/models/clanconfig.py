@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import UniqueConstraint
+from django.db.models.functions import Lower
 
 
 class Clanconfig(models.Model):
@@ -8,5 +9,5 @@ class Clanconfig(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=["guild", "clan"], name='unique_clanconfig'),  # a clan can be configured only once per guild
+            UniqueConstraint(Lower("clan").desc(), "guild", name='unique_clanconfig'),  # a clan can be configured only once per guild
         ]

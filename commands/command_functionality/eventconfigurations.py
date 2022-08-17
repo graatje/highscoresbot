@@ -164,7 +164,10 @@ async def settime(sendable: Sendable, eventname: str, time: int = None):
 
 async def getclanregistrations(sendable: Sendable):
     clans = [clanconfig.clan async for clanconfig in Clanconfig.objects.filter(guild=sendable.guild.id)]
-    await sendable.send("The following clans have been registered for this server:\n" + "\n".join(clans))
+    if 'all' in [clan.lower() for clan in clans]:
+        await sendable.send("all clans have been registered, since you have 'all' registered.")
+    else:
+        await sendable.send("The following clans have been registered for this server:\n" + "\n".join(clans))
 
 
 async def showregistrations(sendable: Sendable, client: discord.Client):
@@ -214,26 +217,27 @@ async def unregisterclan(sendable: Sendable, clanname: str):
     :param ctx: discord context
     :param clanname: The clanname
     """
-    if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-            sendable.user.guild_permissions.administrator:
-        await sendable.send("insufficient permissions to use this command!")
-        return
-    clanname = clanname.lower()
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM clanconfig WHERE guildid=? AND clan=?", (sendable.guild.id, clanname))
-    allregistered = bool(cur.fetchall())
-    if clanname == "all" and not allregistered:
-        cur.execute("DELETE FROM clanconfig WHERE guildid=?", (sendable.guild.id,))
+    print("WARNING: BYPASSING PERMISSIONS!")
+    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+    #         sendable.user.guild_permissions.administrator:
+    #     await sendable.send("insufficient permissions to use this command!")
+    #     return
+    clannames = [clanconfig.clan async for clanconfig in Clanconfig.objects.filter(guild=sendable.guild.id)]
+    if clanname == 'all' and 'all' not in [clan.lower() for clan in clannames]:
+        deletefunc = sync_to_async(Clanconfig.objects.filter(guild=sendable.guild.id).delete)
+        await deletefunc()
+    elif clanname == "all":
+        objfunc = sync_to_async(Clanconfig.objects.get)
+        obj = await objfunc(guild=sendable.guild.id, clan='all')
+        deletefunc = sync_to_async(obj.delete)
     else:
-        cur.execute("DELETE FROM clanconfig WHERE guildid=? AND clan=?", (sendable.guild.id, clanname))
-    conn.commit()
-    conn.commit()
-    cur.execute("SELECT clan FROM clanconfig WHERE guildid=?", (sendable.guild.id,))
-    clans = [row[0] for row in cur.fetchall()]
-    conn.close()
+        objfunc = sync_to_async(Clanconfig.objects.get)
+        obj = await objfunc(guild=sendable.guild.id, clan__iexact=clanname)
+        deletefunc = sync_to_async(obj.delete)
+    await deletefunc()
+    clannames = [clanconfig.clan async for clanconfig in Clanconfig.objects.filter(guild=sendable.guild.id)]
     await sendable.send(f"configuration for {clanname} removed!\n"
-                                            "remaining clans: ```\n" + "\n".join(clans) + "```")
+                                            "remaining clans: ```\n" + "\n".join(clannames) + "```")
 
 
 async def registerclan(sendable: Sendable, clanname: str):
@@ -243,23 +247,17 @@ async def registerclan(sendable: Sendable, clanname: str):
     :param ctx: discord context
     :param clanname: The name of the clan.
     """
-    if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-            sendable.user.guild_permissions.administrator:
-        await sendable.response.send_message("insufficient permissions to use this command!")
-        return
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
+    print("WARNING: BYPASSING PERMISSIONS!")
+    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+    #         sendable.user.guild_permissions.administrator:
+    #     await sendable.response.send_message("insufficient permissions to use this command!")
+    #     return
     try:
-        cur.execute("INSERT INTO clanconfig(guildid, clan) VALUES(?, ?)", (sendable.guild.id, clanname.lower()))
-        conn.commit()
-        await sendable.send(f"{clanname} registered!")
-    except sqlite3.OperationalError as e:
-        print(e)
-        await sendable.send("something went wrong." + str(e))
-    except sqlite3.IntegrityError:
-        await sendable.send("Unable to register that clanname! Is it already registered maybe?")
-    finally:
-        conn.close()
+        func = sync_to_async(Clanconfig.objects.create)
+        await func(guild=sendable.guild.id, clan=clanname)
+        await sendable.send(f"successfully registered {clanname}")
+    except IntegrityError:
+        await sendable.send("guild already registered.")
 
 
 async def unregister(sendable: Sendable, eventname: str):
