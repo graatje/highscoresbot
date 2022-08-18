@@ -3,6 +3,8 @@ import datetime
 from typing import List
 from numpy import isnan
 
+from db.eventconfigurations.models import EventconfigPermissions
+
 
 def replacenan(list, replacement):
     for i in range(len(list)):
@@ -104,30 +106,15 @@ def gethoneylocations() -> list:
     honeylocations.sort()
     return honeylocations
 
-def gettournamentprizes() -> List[str]:
-    with sqlite3.connect("data.db") as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT prize FROM tournamentprizes")
-        tournamentprizes = [row[0] for row in cur.fetchall()]
-    tournamentprizes.sort()
-    return tournamentprizes
 
-def haspermissions(roles: list, guild: int) -> bool:
+async def haspermissions(roles: List[int], guild: int) -> bool:
     """
     checks if a role has permissions to adjust eventconfigurations for the provided guild.
     :param roles: a list of roles the user has.
     :param guild: the guildid of the guild.
     :return: boolean, true if user has permissions.
     """
-    conn = sqlite3.connect("eventconfigurations.db")
-    cur = conn.cursor()
-    cur.execute("SELECT roleid FROM permissions WHERE guildid=?", (guild,))
-    permissionslist = [row[0] for row in cur.fetchall()]
-    conn.close()
-    for role in roles:
-        if role in permissionslist:
-            return True
-    return False
+    return bool([_ async for _ in EventconfigPermissions.objects.filter(guild=guild, role__in=roles)])
 
 
 def getworldbosstime(path="worldbosstime.txt") -> datetime.datetime:

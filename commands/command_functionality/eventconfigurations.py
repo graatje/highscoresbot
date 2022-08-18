@@ -14,6 +14,10 @@ from typing import Union
 from db.config.models import Eventname
 from db.eventconfigurations.models import EventconfigPermissions, Eventconfiguration, Clanconfig, Playerconfig
 
+"""
+Eventconfig utilities
+"""
+
 
 async def fetch_eventconfig(guildid: int, event: Eventname) -> Eventconfiguration:
     """
@@ -25,8 +29,7 @@ async def fetch_eventconfig(guildid: int, event: Eventname) -> Eventconfiguratio
     try:
         return await (sync_to_async(Eventconfiguration.objects.get))(guild=guildid, eventname=event)
     except Eventconfiguration.DoesNotExist:
-        createfunc = sync_to_async(Eventconfiguration.objects.create)
-        return await createfunc(guild=guildid, eventname=event)
+        return await (sync_to_async(Eventconfiguration.objects.create))(guild=guildid, eventname=event)
 
 
 async def getEventObject(eventname) -> Union[Eventname, None]:
@@ -34,6 +37,11 @@ async def getEventObject(eventname) -> Union[Eventname, None]:
         return await (sync_to_async(Eventname.objects.get))(name__iexact=eventname)
     except Eventname.DoesNotExist:
         return None
+
+
+"""
+Start block that can be implemented into commands
+"""
 
 
 async def setperms(sendable: Sendable, role: discord.Role):
@@ -47,9 +55,8 @@ async def setperms(sendable: Sendable, role: discord.Role):
         await sendable.send("only administrators can use this command!")
         return
 
-    func = sync_to_async(EventconfigPermissions.objects.create)
     try:
-        await func(guild=sendable.guild.id, role=role.id)
+        await (sync_to_async(EventconfigPermissions.objects.create))(guild=sendable.guild.id, role=role.id)
         await sendable.send("role successfully given permissions.")
     except IntegrityError:
         await sendable.send("role already had permissions.")
@@ -68,11 +75,10 @@ async def removeperms(sendable: Sendable, role: discord.Role):
     if not sendable.user.guild_permissions.administrator:
         await sendable.send("only administrators can use this command!")
         return
-    func = sync_to_async(EventconfigPermissions.objects.get)
+
     try:
-        obj = await func(guild=sendable.guild.id, role=role.id)
-        deletefunc = sync_to_async(obj.delete)
-        await deletefunc()
+        obj = await (sync_to_async(EventconfigPermissions.objects.get))(guild=sendable.guild.id, role=role.id)
+        await (sync_to_async(obj.delete))()  # deleting the permissions.
         await sendable.send("Role successfully removed from permissions.")
     except EventconfigPermissions.DoesNotExist:
         await sendable.send("that role had no permissions.")
@@ -90,13 +96,16 @@ async def getperms(sendable: Sendable):
     if not roleids:
         await sendable.send("no permissions set.")
         return
-    message = "```\n"
+    rolenames = []
     for roleid in roleids:
-        role = sendable.guild.get_role(roleid)
-        if role is not None:
-            message += str(role) + "\n"
-    message += "\n```"
-    await sendable.send(message)
+        try:
+            role = str(sendable.guild.get_role(roleid))  # @todo check what errors this throws and add to block.
+        except Exception as e:
+            print(e)
+            role = "unknown role"
+        rolenames.append(role)
+
+    await sendable.send("```\n" + "\n".join(rolenames) + "\n```")
 
 
 async def register(sendable: Sendable, channel: discord.TextChannel = None):
@@ -106,11 +115,10 @@ async def register(sendable: Sendable, channel: discord.TextChannel = None):
     :param sendable: Sendable object.
     :param channel: The channel to send the event to. Default channel where command was used.
     """
-    print("WARNING: PERMISSIONS BYPASSED")
-    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-    #         sendable.user.guild_permissions.administrator:
-    #     await sendable.send("insufficient permissions to use this command!")
-    #     return
+    if not await haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+            sendable.user.guild_permissions.administrator:
+        await sendable.send("insufficient permissions to use this command!")
+        return
     chan = channel if channel is not None else sendable.channel
     eventnames = [eventname.name async for eventname in Eventname.objects.all().order_by('name')]
     view = SelectsView(sendable, eventnames, lambda options: Register(sendable, options, chan))
@@ -125,26 +133,24 @@ async def settime(sendable: Sendable, eventname: str, time: int = None):
     :param eventname: The name of the event
     :param time: the time the message of the event should stay in the channel. Default None.
     """
-    print("WARNING: PERMISSIONS BYPASSED")
-    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-    #         sendable.user.guild_permissions.administrator:
-    #     await sendable.send("insufficient permissions to use this command!")
-    #     return
-    eventname = eventname.lower()
+    if not await haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+            sendable.user.guild_permissions.administrator:
+        await sendable.send("insufficient permissions to use this command!")
+        return
     try:
         if time is not None:
             time = int(time)
     except ValueError:
         await sendable.send("please provide a valid time!")
         return
-    # if not await __eventnamecheck(sendable, eventname):
-    #     return
     event = await getEventObject(eventname)
-
+    if event is None:
+        await sendable.send("invalid eventname! Please select an eventname from the autocomplete.")
+        return
     eventconfig = await fetch_eventconfig(event=event, guildid=sendable.guild.id)
     eventconfig.time_in_channel = time
-    savefunc = sync_to_async(eventconfig.save)
-    await savefunc()
+    await (sync_to_async(eventconfig.save))()
+
     if time is not None:
         await sendable.send(f"messages for the {eventname} event will be removed after {time} minutes. ")
     else:
@@ -206,27 +212,21 @@ async def unregisterclan(sendable: Sendable, clanname: str):
     :param sendable: Sendable object
     :param clanname: The clanname
     """
-    print("WARNING: BYPASSING PERMISSIONS!")
-    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-    #         sendable.user.guild_permissions.administrator:
-    #     await sendable.send("insufficient permissions to use this command!")
-    #     return
+    if not await haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+            sendable.user.guild_permissions.administrator:
+        await sendable.send("insufficient permissions to use this command!")
+        return
     clannames = [clanconfig.clan async for clanconfig in Clanconfig.objects.filter(guild=sendable.guild.id)]
     if clanname == 'all' and 'all' not in [clan.lower() for clan in clannames]:
-        deletefunc = sync_to_async(Clanconfig.objects.filter(guild=sendable.guild.id).delete)
-        await deletefunc()
-    elif clanname == "all":
-        objfunc = sync_to_async(Clanconfig.objects.get)
-        obj = await objfunc(guild=sendable.guild.id, clan='all')
-        deletefunc = sync_to_async(obj.delete)
+        await (sync_to_async(Clanconfig.objects.filter(guild=sendable.guild.id).delete))()
     else:
-        objfunc = sync_to_async(Clanconfig.objects.get)
-        obj = await objfunc(guild=sendable.guild.id, clan__iexact=clanname)
-        deletefunc = sync_to_async(obj.delete)
-    await deletefunc()
+        obj = await (sync_to_async(Clanconfig.objects.get))(guild=sendable.guild.id, clan__iexact=clanname)
+        await (sync_to_async(obj.delete))()
     clannames = [clanconfig.clan async for clanconfig in Clanconfig.objects.filter(guild=sendable.guild.id)]
-    await sendable.send(f"configuration for {clanname} removed!\n"
-                                            "remaining clans: ```\n" + "\n".join(clannames) + "```")
+    await sendable.send(f"configuration for {clanname} removed!\n" +
+                        "remaining clans: ```\n" +
+                        "\n".join(clannames) +
+                        "\n```")
 
 
 async def registerclan(sendable: Sendable, clanname: str):
@@ -236,14 +236,12 @@ async def registerclan(sendable: Sendable, clanname: str):
     :param sendable: Sendable object
     :param clanname: The name of the clan.
     """
-    print("WARNING: BYPASSING PERMISSIONS!")
-    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-    #         sendable.user.guild_permissions.administrator:
-    #     await sendable.response.send_message("insufficient permissions to use this command!")
-    #     return
+    if not await haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+            sendable.user.guild_permissions.administrator:
+        await sendable.response.send_message("insufficient permissions to use this command!")
+        return
     try:
-        func = sync_to_async(Clanconfig.objects.create)
-        await func(guild=sendable.guild.id, clan=clanname)
+        await (sync_to_async(Clanconfig.objects.create))(guild=sendable.guild.id, clan=clanname)
         await sendable.send(f"successfully registered {clanname}")
     except IntegrityError:
         await sendable.send("guild already registered.")
@@ -256,63 +254,43 @@ async def unregister(sendable: Sendable, id: int):
     :param sendable: Sendable object
     :param id: the id of the event
     """
-    print("WARNING: BYPASSING AUTH!")
-    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not \
-    #         sendable.user.guild_permissions.administrator:
-    #     await sendable.send("insufficient permissions to use this command!")
-    #     return
-    eventconfigfunc = sync_to_async(Eventconfiguration.objects.get)
+    if not await haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not \
+            sendable.user.guild_permissions.administrator:
+        await sendable.send("insufficient permissions to use this command!")
+        return
     try:
-        eventconfig: Union[Eventconfiguration, None] = await eventconfigfunc(id=id)
+        eventconfig: Union[Eventconfiguration, None] = await (sync_to_async(Eventconfiguration.objects.get))(id=id)
     except Eventconfiguration.DoesNotExist:
         eventconfig = None
     if eventconfig is None or eventconfig.guild != sendable.guild.id:
-        await sendable.send("unauthorized or event not found. please select something in the autocomplete!")
+        await sendable.send("Unauthorized or event not found. Please select something in the autocomplete!")
         return
-    deletefunc = sync_to_async(eventconfig.delete)
-    await deletefunc()
-    await sendable.send("event successfully removed!")
+    await (sync_to_async(eventconfig.delete))()
+    await sendable.send("Event successfully removed!")
 
 
-async def setpingrole(sendable: Sendable, eventname: str, pingrole: discord.Role):
+async def setpingrole(sendable: Sendable, eventname: str, pingrole: Union[discord.Role, None] = None):
     """
     Adds a ping of the provided role to the event message.
     :param sendable: Sendable object
     :param eventname: The name of the event.
     :param pingrole: The role id or the role mention.
     """
-    print("WARNING: BYPASSING AUTH")
-    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-    #         sendable.user.guild_permissions.administrator:
-    #     await sendable.send("insufficient permissions to use this command!")
-    #     return
+    if not await haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+            sendable.user.guild_permissions.administrator:
+        await sendable.send("insufficient permissions to use this command!")
+        return
     event = await getEventObject(eventname)
     if event is None:
         await sendable.send("invalid eventname.")
         return
     eventconfig = await fetch_eventconfig(sendable.guild.id, event)
-    eventconfig.pingrole = pingrole.id
-    savefunc = sync_to_async(eventconfig.save)
-    await savefunc()
-    await sendable.send("pingrole set!")
-
-
-async def removeping(sendable: Sendable, eventname: str):
-    """
-    Removes the ping of the provided event for the guild it was used in.
-    :param sendable: Sendable object
-    :param eventname: the name of the event.
-    """
-    print("WARNING: AUTH BYPASSED!")
-    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-    #         sendable.user.guild_permissions.administrator:
-    #     await sendable.send("insufficient permissions to use this command!")
-    #     return
-    event = await getEventObject(eventname)
-    eventconfig = await fetch_eventconfig(guildid=sendable.guild.id, event=event)
-    eventconfig.pingrole = None
+    eventconfig.pingrole = pingrole.id if pingrole is not None else None
     await (sync_to_async(eventconfig.save))()
-    await sendable.send("pingrole removed if it was set!")
+    if pingrole is None:
+        await sendable.send(f"Pingrole removed for the {eventname} event!")
+    else:
+        await sendable.send(f"{pingrole.name} will get pinged for the {eventname} event!")
 
 
 async def playerconfig(sendable: Sendable, actiontype: str, player: str=None):
@@ -322,6 +300,10 @@ async def playerconfig(sendable: Sendable, actiontype: str, player: str=None):
     :param actiontype: 'add', 'remove', or 'show'
     :param player: can only be None when actiontype is 'show'.
     """
+    if not await haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+            sendable.user.guild_permissions.administrator and not actiontype == "show":
+        await sendable.send("insufficient permissions to use this command!")
+        return
     if actiontype in ["add", "remove"] and player is None:
         await sendable.send(f"please specify a player to {actiontype}.")
         return
