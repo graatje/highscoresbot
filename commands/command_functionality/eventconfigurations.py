@@ -260,34 +260,29 @@ async def registerclan(sendable: Sendable, clanname: str):
         await sendable.send("guild already registered.")
 
 
-async def unregister(sendable: Sendable, eventname: str):
+async def unregister(sendable: Sendable, id: int):
     """
     Sets the channel of the provided event to null, that way the provided event will not be sent anymore to that
     server.
     :param ctx: discord context
     :param eventname: the name of the event
     """
-    if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not \
-            sendable.user.guild_permissions.administrator:
-        await sendable.send("insufficient permissions to use this command!")
+    print("WARNING: BYPASSING AUTH!")
+    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not \
+    #         sendable.user.guild_permissions.administrator:
+    #     await sendable.send("insufficient permissions to use this command!")
+    #     return
+    eventconfigfunc = sync_to_async(Eventconfiguration.objects.get)
+    try:
+        eventconfig: Union[Eventconfiguration, None] = await eventconfigfunc(id=id)
+    except Eventconfiguration.DoesNotExist:
+        eventconfig = None
+    if eventconfig is None or eventconfig.guild != sendable.guild.id:
+        await sendable.send("unauthorized or event not found. please select something in the autocomplete!")
         return
-    if eventname != "all":
-        if not await __eventnamecheck(sendable, eventname):
-            return
-    eventname = eventname.lower()
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
-    if eventname == "all":
-        result = cur.execute("UPDATE eventconfig SET channel=null WHERE guildid=?", (sendable.guild.id,))
-    else:
-        result = cur.execute(
-            "UPDATE eventconfig SET channel=null WHERE guildid=? AND eventname=?", (sendable.guild.id, eventname))
-    conn.commit()
-    conn.close()
-    if result.rowcount:
-        await sendable.send(f"The {eventname} event will no longer be announced.")
-    else:
-        await sendable.send(f"The {eventname} was not configured already.")
+    deletefunc = sync_to_async(eventconfig.delete)
+    await deletefunc()
+    await sendable.send("event successfully removed!")
 
 
 async def setpingrole(sendable: Sendable, eventname: str, pingrole: discord.Role):

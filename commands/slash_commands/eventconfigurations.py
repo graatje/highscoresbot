@@ -1,9 +1,24 @@
 import discord
+from asgiref.sync import sync_to_async
 from discord import app_commands, Interaction
 from discord.ext import commands
 import sqlite3
 from commands.command_functionality import eventconfigurations
 from commands.sendable import Sendable
+from db.eventconfigurations.models import Eventconfiguration
+
+
+async def unregisterautocomplete(interaction: Interaction, current: str):
+    result = []
+    async for eventconfig in Eventconfiguration.objects.filter(channel__isnull=False, guild=interaction.guild.id):
+        eventnamefunc = sync_to_async(eventconfig.get_eventname)
+        eventname = await eventnamefunc()
+        searchstr = f"{eventname}"
+        if current in searchstr:
+            result.append(app_commands.Choice(name=searchstr, value=eventconfig.id))
+        if len(result) == 25:
+            break
+    return result
 
 
 class Eventconfigurations(commands.Cog):
@@ -68,9 +83,10 @@ class Eventconfigurations(commands.Cog):
         await eventconfigurations.registerclan(sendable, clanname)
 
     @eventconfiggroup.command(name="unregister")
-    async def unregister(self, interaction: Interaction, eventname: str):
+    @app_commands.autocomplete(id=unregisterautocomplete)
+    async def unregister(self, interaction: Interaction, id: int):
         sendable = Sendable(interaction)
-        await eventconfigurations.unregister(sendable, eventname)
+        await eventconfigurations.unregister(sendable, id)
 
     @eventconfiggroup.command(name="setpingrole")
     async def setpingrole(self, interaction: Interaction, eventname: str, pingrole: discord.Role):
