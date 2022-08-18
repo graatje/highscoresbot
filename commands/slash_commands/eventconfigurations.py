@@ -6,7 +6,7 @@ import sqlite3
 from commands.command_functionality import eventconfigurations
 from commands.sendable import Sendable
 from db.config.models import Eventname
-from db.eventconfigurations.models import Eventconfiguration
+from db.eventconfigurations.models import Eventconfiguration, Playerconfig
 
 
 async def unregisterautocomplete(interaction: Interaction, current: str):
@@ -27,6 +27,16 @@ async def eventnameautocomplete(interaction: Interaction, current: str):
                   async for eventname in Eventname.objects.all() if current in eventname.name]
     return eventnames[:25]
 
+
+async def playerconfigactiontypeautocomplete(*args, **kwargs):
+    return [app_commands.Choice(name="add player", value="add"),
+            app_commands.Choice(name="remove player", value="remove"),
+            app_commands.Choice(name="show players", value="show")]
+
+
+async def playerconfigplayerautocomplete(interaction: Interaction, current: str):
+    return [app_commands.Choice(name=config.player, value=config.player)
+            async for config in Playerconfig.objects.filter(guild=interaction.guild.id) if current in config.player]
 
 class Eventconfigurations(commands.Cog):
     """
@@ -109,9 +119,11 @@ class Eventconfigurations(commands.Cog):
         await eventconfigurations.removeping(sendable, eventname)
 
     @eventconfiggroup.command(name="playerconfig")
-    async def playerconfig(self, interaction: Interaction, player: str = None):
+    @app_commands.autocomplete(actiontype=playerconfigactiontypeautocomplete,
+                               player=playerconfigplayerautocomplete)
+    async def playerconfig(self, interaction: Interaction, actiontype: str, player: str = None):
         sendable = Sendable(interaction)
-        await eventconfigurations.playerconfig(sendable, player)
+        await eventconfigurations.playerconfig(sendable, actiontype, player)
 
 
 async def setup(client):
