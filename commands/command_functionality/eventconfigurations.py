@@ -22,8 +22,19 @@ from typing import Union
 from db.config.models import Eventname
 from db.eventconfigurations.models import EventconfigPermissions, Eventconfiguration, Clanconfig
 
-databasepath = "./eventconfigurations.db"
-
+async def fetch_eventconfig(guildid, event):
+    """
+    fetches an event. if it does not exist it creates a basic one.
+    :param sendable:
+    :param event:
+    :return:
+    """
+    func = sync_to_async(Eventconfiguration.objects.get)
+    try:
+        return await func(guild=guildid, eventname=event)
+    except Eventconfiguration.DoesNotExist:
+        createfunc = sync_to_async(Eventconfiguration.objects.create)
+        return await createfunc(guild=guildid, eventname=event)
 
 async def __eventnamecheck(sendable: Sendable, eventname: str) -> bool:
     """
@@ -40,7 +51,7 @@ async def __eventnamecheck(sendable: Sendable, eventname: str) -> bool:
 async def getEventObject(eventname):
     try:
         func = sync_to_async(Eventname.objects.get)
-        return await func(name=eventname)
+        return await func(name__iexact=eventname)
     except Eventname.DoesNotExist:
         return None
 
@@ -150,8 +161,7 @@ async def settime(sendable: Sendable, eventname: str, time: int = None):
     #     return
     event = await getEventObject(eventname)
 
-    func = sync_to_async(Eventconfiguration.objects.get)
-    eventconfig = await func(eventname=event, guild=sendable.guild.id)
+    eventconfig = await fetch_eventconfig(event=event, guildid=sendable.guild.id)
     eventconfig.time_in_channel = time
     savefunc = sync_to_async(eventconfig.save)
     await savefunc()
@@ -292,22 +302,19 @@ async def setpingrole(sendable: Sendable, eventname: str, pingrole: discord.Role
     :param eventname: The name of the event.
     :param pingrole: The role id or the role mention.
     """
-    if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-            sendable.user.guild_permissions.administrator:
-        await sendable.send("insufficient permissions to use this command!")
+    print("WARNING: BYPASSING AUTH")
+    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+    #         sendable.user.guild_permissions.administrator:
+    #     await sendable.send("insufficient permissions to use this command!")
+    #     return
+    event = await getEventObject(eventname)
+    if event is None:
+        await sendable.send("invalid eventname.")
         return
-    eventname = eventname.lower()
-    if not await __eventnamecheck(sendable, eventname):
-        return
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
-    result = cur.execute("UPDATE eventconfig SET pingrole=? WHERE guildid=? AND eventname=?",
-                         (pingrole.id, sendable.guild.id, eventname))
-    if not result.rowcount:
-        cur.execute("INSERT INTO eventconfig(guildid, eventname, channel, pingrole) VALUES(?, ?, null, ?)",
-                    (sendable.guild.id, eventname, pingrole.id))
-    conn.commit()
-    conn.close()
+    eventconfig = await fetch_eventconfig(sendable.guild.id, event)
+    eventconfig.pingrole = pingrole.id
+    savefunc = sync_to_async(eventconfig.save)
+    await savefunc()
     await sendable.send("pingrole set!")
 
 
@@ -317,16 +324,15 @@ async def removeping(sendable: Sendable, eventname: str):
     :param ctx: discord context
     :param eventname: the name of the event.
     """
-    if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
-            sendable.user.guild_permissions.administrator:
-        await sendable.send("insufficient permissions to use this command!")
-        return
-    eventname = eventname.lower()
-    conn = sqlite3.connect(databasepath)
-    cur = conn.cursor()
-    cur.execute("UPDATE eventconfig SET pingrole=null WHERE guildid=? AND eventname=?", (sendable.guild.id, eventname))
-    conn.commit()
-    conn.close()
+    print("WARNING: AUTH BYPASSED!")
+    # if not haspermissions([role.id for role in sendable.user.roles], sendable.guild.id) and not\
+    #         sendable.user.guild_permissions.administrator:
+    #     await sendable.send("insufficient permissions to use this command!")
+    #     return
+    event = await getEventObject(eventname)
+    eventconfig = await fetch_eventconfig(guildid=sendable.guild.id, event=event)
+    eventconfig.pingrole = None
+    await (sync_to_async(eventconfig.save))()
     await sendable.send("pingrole removed if it was set!")
 
 

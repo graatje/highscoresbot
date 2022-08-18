@@ -5,6 +5,7 @@ from discord.ext import commands
 import sqlite3
 from commands.command_functionality import eventconfigurations
 from commands.sendable import Sendable
+from db.config.models import Eventname
 from db.eventconfigurations.models import Eventconfiguration
 
 
@@ -19,6 +20,12 @@ async def unregisterautocomplete(interaction: Interaction, current: str):
         if len(result) == 25:
             break
     return result
+
+
+async def eventnameautocomplete(interaction: Interaction, current: str):
+    eventnames = [app_commands.Choice(name=eventname.name, value=eventname.name)
+                  async for eventname in Eventname.objects.all() if current in eventname.name]
+    return eventnames[:25]
 
 
 class Eventconfigurations(commands.Cog):
@@ -58,6 +65,7 @@ class Eventconfigurations(commands.Cog):
         await eventconfigurations.register(sendable, channel)
 
     @eventconfiggroup.command(name="settime")
+    @app_commands.autocomplete(eventname=eventnameautocomplete)
     async def settime(self, interaction: Interaction, eventname: str, time: int = None):
         sendable = Sendable(interaction)
         await eventconfigurations.settime(sendable, eventname, time)
@@ -89,11 +97,13 @@ class Eventconfigurations(commands.Cog):
         await eventconfigurations.unregister(sendable, id)
 
     @eventconfiggroup.command(name="setpingrole")
+    @app_commands.autocomplete(eventname=eventnameautocomplete)
     async def setpingrole(self, interaction: Interaction, eventname: str, pingrole: discord.Role):
         sendable = Sendable(interaction)
         await eventconfigurations.setpingrole(sendable, eventname, pingrole)
 
     @eventconfiggroup.command(name="removeping")
+    @app_commands.autocomplete(eventname=eventnameautocomplete)
     async def removeping(self, interaction: Interaction, eventname: str):
         sendable = Sendable(interaction)
         await eventconfigurations.removeping(sendable, eventname)
