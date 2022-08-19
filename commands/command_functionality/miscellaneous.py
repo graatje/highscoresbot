@@ -10,6 +10,7 @@ from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.interractions.selectsview import SelectsView
 from commands.sendable import Sendable
 from commands.utils.utils import tablify
+from db.highscores.models import Highscore
 from highscores import getClanList
 
 from ppobyter.marketplace.item import Item
@@ -76,15 +77,13 @@ def __generate_img(pokemon: Pokemon):
 
 async def clanlist(sendable: Sendable, clanname: str):
     """
-    gives a list of players that are in the provided clan.
+    gives a list of players that are in the provided clan. @todo test this with filled highscores database
     :param ctx: discord context
     :param clanname: the name of the clan you want the clanlist from.
     """
-    clanname = clanname.lower()
-    result = getClanList(clanname)
-    result.sort()
-    if result:
-        await sendable.send(f"clanlist of {clanname}: \n" + ", ".join(result))
+    players = list(set([highscore.data["username"] async for highscore in Highscore.objects.filter(data__clan__iexact=clanname, data__has_key="username")]))
+    if players:
+        await sendable.send(f"clanlist of {clanname}: \n" + ", ".join(players))
     else:
         await sendable.send("no results found for that clanname.")
 
@@ -142,45 +141,20 @@ async def worldboss(sendable: Sendable, playername: str):
     :param ctx: discord context
     :param playername: the player of who you want to see the worldbosses he/she participated in.
     """
-    viewquery = """
-    CREATE VIEW participants
-    AS
-    SELECT worldbossid, count(*) as amount FROM worldboss_dmg GROUP BY worldbossid;
-    """
-    selectquery = """
-    SELECT worldboss.worldbossname, worldboss_dmg.damage, worldboss.date, rankings.position, participants.amount
-    FROM worldboss_dmg, worldboss, participants, rankings
-    WHERE worldboss_dmg.playername=?
-    AND worldboss.id = worldboss_dmg.worldbossid AND worldboss_dmg.worldbossid = participants.worldbossid
-    AND rankings.playername=worldboss_dmg.playername AND rankings.worldbossid = worldboss_dmg.worldbossid
-    """
-    rankingsquery = """
-    CREATE VIEW rankings
-    AS
-    SELECT rank() OVER (PARTITION BY  worldbossid ORDER BY damage DESC) as position, * FROM worldboss_dmg
-    """
-    playername = playername.lower()
-    conn = sqlite3.connect(PathManager().getpath("data.db"))
-    cur = conn.cursor()
-    try:
-        cur.execute("DROP VIEW participants")
-        cur.execute("DROP VIEW rankings")
-    except sqlite3.OperationalError:
-        pass  # already exists.
-    cur.execute(viewquery)
-    cur.execute(rankingsquery)
-    cur.execute(selectquery, (playername,))
-
-    result = cur.fetchall()
-    cur.execute("DROP VIEW participants")
-    cur.execute("DROP VIEW rankings")
-    messages = tablify(["worldboss", "damage", "date", "rank", "participants"], result)
-    messageshower = ResultmessageShower(messages, sendable)
-    await sendable.send(f"page {messageshower.currentpage} of {messageshower.maxpage}" +
-                   messages[messageshower.currentpage-1], view=messageshower)
+    pass
+    # messages = tablify(["worldboss", "damage", "date", "rank", "participants"], result)
+    # messageshower = ResultmessageShower(messages, sendable)
+    # await sendable.send(f"page {messageshower.currentpage} of {messageshower.maxpage}" +
+    #                messages[messageshower.currentpage-1], view=messageshower)
 
 
 async def gmsearch(sendable: Sendable, searchstring: str):
+    """
+    @TODO whole rework
+    :param sendable:
+    :param searchstring:
+    :return:
+    """
     if len(searchstring) > 80:
         await sendable.send("the max length for the item to search for is 80 characters!")
         return
