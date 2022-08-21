@@ -12,8 +12,7 @@ from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.interractions.selectsview import SelectsView
 from commands.sendable import Sendable
 from commands.utils.utils import tablify
-from db.highscores.models import Highscore, WorldbossHighscore
-from highscores import getClanList
+from db.highscores.models import Highscore, WorldbossHighscore, DefaultClanname
 
 from ppobyter.marketplace.item import Item
 from ppobyter.marketplace.pokemon import Pokemon
@@ -104,39 +103,30 @@ async def invite(sendable: Sendable):
     await sendable.send(embed=embed)
 
 
-async def setdefault(sendable: Sendable, clanname: str=None):
+async def setdefault(sendable: Sendable, clanname: str = None):
     """
     sets a default for the highscores commands. If the clanname is not provided the default will be removed.
-    :param ctx: discord context
+    :param sendable: sendable
     :param clanname: the clan you want to set as default for the highscores commands.
     """
-    clanname = clanname.lower()
     if sendable.guild is None:
         await sendable.send("this command can't be used in pm.")
         return
-    if not sendable.user.guild_permissions.administrator:
+    elif not sendable.user.guild_permissions.administrator:
         await sendable.send(
             "insufficient permissions to use this command. Ask a server administrator!")
         return
-    id = sendable.guild.id
-    conn = sqlite3.connect("highscores.db")
-    cur = conn.cursor()
-    if clanname is not None:
-        try:
-            cur.execute("INSERT INTO clannames(id, name) VALUES(?,?)", (id, clanname))
-        except sqlite3.IntegrityError:
-            cur.execute("UPDATE clannames SET name=? WHERE id=?", (clanname, id))
-        msg = await sendable.send(f"{clanname} registered as default!")
-    else:
-        cur.execute("UPDATE clannames SET name = NULL WHERE id=?", (id,))
-        msg = await sendable.send("default has been removed!")
     try:
-        conn.commit()
-    except Exception as e:
-        print(e)
-        await msg.delete()
-        await sendable.send("Something went wrong. Developer is informed.")
-        raise e
+        defaultclannameobj: DefaultClanname = await DefaultClanname.objects.aget(guild=sendable.guild.id)
+    except DefaultClanname.DoesNotExist:
+        defaultclannameobj = DefaultClanname(guild=sendable.guild.id, clan=clanname)
+
+    if clanname is None:
+        await (sync_to_async(defaultclannameobj.delete))()
+        await sendable.send("Default clanname for highscores commands removed!")
+    else:  # clanname provided.
+        await (sync_to_async(defaultclannameobj.save))()
+        await sendable.send(f"default clanname for highscores set to `{clanname}`!")
 
 
 async def worldboss(sendable: Sendable, playername: str):
