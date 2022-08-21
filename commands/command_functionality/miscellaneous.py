@@ -4,17 +4,20 @@ import json
 import sqlite3
 from PIL import Image, ImageDraw, ImageFont
 import discord
+from asgiref.sync import sync_to_async
+
 from commands.interractions.miscellaneous.gmsearch import ImgWithText, GMSearch
 from commands.interractions.miscellaneous.help_cmd import HelpCmd
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.interractions.selectsview import SelectsView
 from commands.sendable import Sendable
 from commands.utils.utils import tablify
-from db.highscores.models import Highscore
+from db.highscores.models import Highscore, WorldbossHighscore
 from highscores import getClanList
 
 from ppobyter.marketplace.item import Item
 from ppobyter.marketplace.pokemon import Pokemon
+from utils.tablify_dict import tablify_dict
 
 
 def __generate_img(pokemon: Pokemon):
@@ -135,17 +138,25 @@ async def setdefault(sendable: Sendable, clanname: str=None):
         await sendable.send("Something went wrong. Developer is informed.")
         raise e
 
+
 async def worldboss(sendable: Sendable, playername: str):
     """
     shows a list of worldbosses a player participated in.
     :param ctx: discord context
     :param playername: the player of who you want to see the worldbosses he/she participated in.
     """
-    pass
-    # messages = tablify(["worldboss", "damage", "date", "rank", "participants"], result)
-    # messageshower = ResultmessageShower(messages, sendable)
-    # await sendable.send(f"page {messageshower.currentpage} of {messageshower.maxpage}" +
-    #                messages[messageshower.currentpage-1], view=messageshower)
+    values = []
+    async for i in WorldbossHighscore.objects.filter(player=playername).order_by("worldboss__date"):
+        wbhighscore = i.to_json()
+        wb = await (sync_to_async(i.get_worldboss))()
+        wbhighscore.update(wb.to_json())
+        values.append(wbhighscore)
+
+    messages = tablify_dict(values, order=["player", "pokemon", "damage", "rank", "participants", "date"],
+                            verbose_names={"pokemon": "worldboss"}, max_length=1900)
+    messageshower = ResultmessageShower(messages, sendable)
+    await sendable.send(f"page {messageshower.currentpage} of {messageshower.maxpage}\n" +
+                        messages[messageshower.currentpage-1], view=messageshower)
 
 
 async def gmsearch(sendable: Sendable, searchstring: str):
