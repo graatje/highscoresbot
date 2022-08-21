@@ -1,7 +1,7 @@
 import sqlite3
 from typing import Union
 from asgiref.sync import sync_to_async
-from db.highscores.models import Highscore, HighscoreConfig
+from db.highscores.models import Highscore, HighscoreConfig, DefaultClanname
 from commands.interractions.highscore_command import HighscoreCommand
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
@@ -15,27 +15,18 @@ async def get_highscore_config(highscorename):
 
 
 async def getdefaultclanname(interaction, comment=True) -> Union[str, None]:
-    # @todo default clan, it is not in the ORM yet either.
     if interaction.guild is None:
-        return
-    conn = sqlite3.connect("highscores.db")
-    cur = conn.cursor()
-    cur.execute("SELECT name FROM clannames WHERE id=?", (interaction.guild.id,))
+        return None
     try:
-        clanname = cur.fetchall()[0][0]
-    except IndexError:
-        clanname = None
-    if clanname is None and comment:
-        await interaction.response.send_message("Please register a default clanname or provide a clan in the command.")
-    elif clanname is not None:
-        clanname = clanname.lower()
-    return clanname
+        return (await DefaultClanname.objects.aget(guild=interaction.guild.id)).clan
+    except DefaultClanname.DoesNotExist:
+        return None
 
 
 async def getplayer(sendable: Sendable, username: str):
     """
     gets a collection of highscores a player is in.
-    :param ctx: discord context
+    :param sendable: the Sendable object.
     :param username: the name of the player you want info from.
     """
     messages = []
@@ -53,7 +44,11 @@ async def getplayer(sendable: Sendable, username: str):
         await sendable.send(messages[0], view=view)
 
 
-async def getclan(sendable: Sendable, clanname: str):
+async def getclan(sendable: Sendable, clanname: str = None):
+    # if the clanname is None and the default is also not present we set the clanname to an empty string.
+    # if it is present tho the clanname gets set to the default.
+    if clanname is None and (clanname := await getdefaultclanname(interaction=sendable)) is None:
+        clanname = ""
     highscores = ["ancientcavemapcontrol", "battlezonemapcontrol", "safarizonemapcontrol", "toprichestclans",
                   "clanwarwins", "topstrongestclans"]
     messages = []
@@ -82,7 +77,9 @@ async def top(sendable: Sendable, highscorename, clanname: str=None):
     :param ctx: discord context
     :param clanname: the clanname, default none, clannamehandler gets clan from db if none.
     """
-    if clanname is None:
+    # if the clanname is None and the default is also not present we set the clanname to an empty string.
+    # if it is present tho the clanname gets set to the default.
+    if clanname is None and (clanname := await getdefaultclanname(interaction=sendable)) is None:
         clanname = ""
     highscoreconfig = await get_highscore_config(highscorename)
     qs = Highscore.objects.filter(highscore=highscoreconfig, rank__lt=10).order_by('rank') | \
@@ -95,19 +92,24 @@ async def top(sendable: Sendable, highscorename, clanname: str=None):
 
 
 async def highscore(sendable: Sendable, highscorename: str, clanname: str=None):
+    # if the clanname is None and the default is also not present we set the clanname to an empty string.
+    # if it is present tho the clanname gets set to the default.
+    if clanname is None:
+        clanname = await getdefaultclanname(interaction=sendable)
     view = HighscoreCommand(sendable, highscorename, clanname)
     await view.init()
     await sendable.send(await view.getPage(), view=view)
 
 
-async def mapcontrol(sendable: Sendable, clanname: str=None):
+async def mapcontrol(sendable: Sendable, clanname: str = None):
     """
     shows the standings of all mapcontrol areas.
     :param ctx: discord context
     :param clanname: the name of the clan, optional.
     """
-
-    if clanname is None:
+    # if the clanname is None and the default is also not present we set the clanname to an empty string.
+    # if it is present tho the clanname gets set to the default.
+    if clanname is None and (clanname := await getdefaultclanname(interaction=sendable)) is None:
         clanname = ""
     mapcontrolhighscores = ["ancientcavemapcontrol", "battlezonemapcontrol", "safarizonemapcontrol"]
     messages = []

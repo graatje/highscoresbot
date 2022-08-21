@@ -32,7 +32,7 @@ class Highscores(commands.Cog):
         await highscores.getplayer(Sendable(interaction), username)
 
     @highscoresgroup.command(name="getclan")
-    async def getclan(self, interaction: Interaction, clanname: str):
+    async def getclan(self, interaction: Interaction, clanname: str = None):
 
        # InteractionResponse.is_done()
         #await interaction.response.pong()
