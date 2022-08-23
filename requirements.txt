@@ -1,4 +1,4 @@
-git+https://github.com/Rapptz/discord.py.git@b561024
+discord.py==2.0.0
 Pillow
 numpy
 pandas

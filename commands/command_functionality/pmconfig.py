@@ -2,8 +2,8 @@ import sqlite3
 from typing import Union
 
 from asgiref.sync import sync_to_async
-from discord import Interaction, TextInput
-
+from discord import Interaction
+from discord.ui import TextInput
 from commands.interractions.pmconfig.pmconfig import PmConfigModel
 from commands.interractions.pmconfig.pmgoldrush import PmGoldrush
 from commands.interractions.pmconfig.pmhoney import PmHoney
@@ -28,11 +28,13 @@ async def pmconfig(interaction: Interaction, eventname: str):
         await interaction.response.send_message("Not a valid eventname! Select an eventname from the autocomplete!")
         return
     textinputs = []
-    # for key, value in eventobj.fields.items():
-    #     textinputs.append(TextInput(data={"label":value,
-    #                                 "required": len(eventobj.fields) <= 1, style=}))
-    await interaction.response.send_modal(PmConfigModel(textinputs))
+    for key, value in eventobj.fields.items():
+        textinputs.append(TextInput(label=value,
+                                    required=False,
+                                    custom_id=key))
 
+    await interaction.response.send_modal(PmConfigModel(textinputs, event=eventobj))
+#    await interaction.response.pong()
 
 async def pmgoldrush(sendable: Sendable):
     """

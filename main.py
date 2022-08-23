@@ -15,7 +15,7 @@ init_django()
 class Main(commands.Bot):
     def __init__(self):
 
-        super().__init__([".", "?"])
+        super().__init__([".", "?"], intents=discord.Intents.default())
         # self.cog_files = ["commands.ingame_events", "commands.highscores", "commands.eventconfig",
         #                   "commands.miscellaneous", "commands.pmconfig"]
         self.cog_files = ["commands.slash_commands.highscores",
