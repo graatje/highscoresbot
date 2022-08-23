@@ -22,7 +22,7 @@ class Main(commands.Bot):
                           "commands.slash_commands.eventconfigurations",
                           "commands.slash_commands.ingame_events",
                           "commands.slash_commands.miscellaneous",
-                          # "commands.slash_commands.pmconfig",
+                          "commands.slash_commands.pmconfig",
                           # "commands.slash_commands.discordbinding",
                           # "commands.msgcontent_commands.msgcontent_highscores"
                           ]

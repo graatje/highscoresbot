@@ -32,7 +32,7 @@ async def fetch_eventconfig(guildid: int, event: Eventname) -> Eventconfiguratio
         return await (sync_to_async(Eventconfiguration.objects.create))(guild=guildid, eventname=event)
 
 
-async def getEventObject(eventname) -> Union[Eventname, None]:
+async def getEventObject(eventname: str) -> Union[Eventname, None]:
     try:
         return await (sync_to_async(Eventname.objects.get))(name__iexact=eventname)
     except Eventname.DoesNotExist:

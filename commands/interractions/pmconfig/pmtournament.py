@@ -1,6 +1,6 @@
 from discord import app_commands, Interaction
 
-from commands.utils.utils import gettournamentprizes
+#from commands.utils.utils import gettournamentprizes
 
 
 async def tournamentprizeautocomplete(interaction: Interaction, current: str):

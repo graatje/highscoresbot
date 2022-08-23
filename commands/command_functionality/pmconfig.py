@@ -1,15 +1,37 @@
 import sqlite3
+from typing import Union
 
-from discord import Interaction
+from asgiref.sync import sync_to_async
+from discord import Interaction, TextInput
 
+from commands.interractions.pmconfig.pmconfig import PmConfigModel
 from commands.interractions.pmconfig.pmgoldrush import PmGoldrush
 from commands.interractions.pmconfig.pmhoney import PmHoney
 from commands.interractions.pmconfig.removepmconfig import RemovePmConfig
 from commands.interractions.selectsview import SelectsView
 from commands.sendable import Sendable
 from commands.utils.utils import getgoldrushlocations, gethoneylocations, getswarmpokemons, getswarmlocations
+from db.config.models import Eventname
+from db.eventconfigurations.models import PmConfig
 
-databasepath = "./eventconfigurations.db"
+
+async def getEventObject(eventname: str) -> Union[Eventname, None]:
+    try:
+        return await (sync_to_async(Eventname.objects.get))(name__iexact=eventname)
+    except Eventname.DoesNotExist:
+        return None
+
+
+async def pmconfig(interaction: Interaction, eventname: str):
+    eventobj = await getEventObject(eventname)
+    if eventobj is None:
+        await interaction.response.send_message("Not a valid eventname! Select an eventname from the autocomplete!")
+        return
+    textinputs = []
+    # for key, value in eventobj.fields.items():
+    #     textinputs.append(TextInput(data={"label":value,
+    #                                 "required": len(eventobj.fields) <= 1, style=}))
+    await interaction.response.send_modal(PmConfigModel(textinputs))
 
 
 async def pmgoldrush(sendable: Sendable):

@@ -1,10 +1,18 @@
 from discord import app_commands, Interaction
 from discord.ext import commands
 from commands.command_functionality import pmconfig
+from commands.interractions.pmconfig.pmconfig import PmConfigModel
 from commands.interractions.pmconfig.pmswarm import swarmpokemonautocomplete, swarmlocationautocomplete
 from commands.interractions.pmconfig.pmtournament import tournamenttypeautocomplete, tournamentprizeautocomplete
 from commands.interractions.pmconfig.pmworldboss import worldbosspokemonautocomplete, worldbosslocationautocomplete
 from commands.sendable import Sendable
+from db.config.models import Eventname
+
+
+async def eventnameautocomplete(interaction: Interaction, current: str):
+    eventnames = [app_commands.Choice(name=eventname.name, value=eventname.name)
+                  async for eventname in Eventname.objects.all() if current in eventname.name]
+    return eventnames[:25]
 
 
 class Pmconfig(commands.Cog):
@@ -17,37 +25,10 @@ class Pmconfig(commands.Cog):
 
     pmconfiggroup = app_commands.Group(name="pmconfig", description="deals with sending ingame events to channels")
 
-    @pmconfiggroup.command(name="pmgoldrush")
-    async def pmgoldrush(self, interaction: Interaction):
-        sendable = Sendable(interaction)
-        await pmconfig.pmgoldrush(sendable)
-
-    @pmconfiggroup.command(name="pmhoney")
-    async def pmhoney(self, interaction: Interaction):
-        sendable = Sendable(interaction)
-        await pmconfig.pmhoney(sendable)
-
-    @pmconfiggroup.command(name='pmswarm')
-    @app_commands.autocomplete(pokemon=swarmpokemonautocomplete,
-                               location=swarmlocationautocomplete)
-    async def pmswarm(self, interaction: Interaction, pokemon: str = None, location: str = None):
-        sendable = Sendable(interaction)
-        await pmconfig.pmswarm(sendable, pokemon, location)
-
-    @pmconfiggroup.command(name="pmworldboss")
-    @app_commands.autocomplete(pokemon=worldbosspokemonautocomplete,
-                               location=worldbosslocationautocomplete)
-    async def pmworldboss(self, interaction: Interaction, pokemon: str=None, location: str=None):
-        sendable = Sendable(interaction)
-        await pmconfig.pmworldboss(sendable, pokemon, location)
-
-    @pmconfiggroup.command(name="pmtournament")
-    @app_commands.autocomplete(tournament=tournamenttypeautocomplete,
-                               prize=tournamentprizeautocomplete
-                               )
-    async def pmtournament(self, interaction: Interaction, prize: str = None, tournament: str = None):
-        sendable = Sendable(interaction)
-        await pmconfig.pmtournament(sendable, prize, tournament)
+    @pmconfiggroup.command(name="pmconfig")
+    @app_commands.autocomplete(eventname=eventnameautocomplete)
+    async def pmconfig(self, interaction: Interaction, eventname: str):
+        await pmconfig.pmconfig(interaction, eventname)
 
     @pmconfiggroup.command(name="removepmconfig")
     async def removepmconfig(self, interaction: Interaction):
