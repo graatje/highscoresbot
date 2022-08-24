@@ -1,18 +1,12 @@
 import datetime
-import sqlite3
-
 import discord
 from asgiref.sync import sync_to_async
 from django.db.models import Count, Max
-
-from commands.interractions.ingame_events.getchests import GetChests
-from commands.interractions.ingame_events.getrolls import GetRolls
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
-from commands.utils.utils import tablify, getworldbosstime
+from commands.utils.utils import getworldbosstime
 from db.highscores.models import Highscore
 from db.ingame_data.models import Encounter, Chest, Roll, Activity
-from highscores import getClanList
 from utils.tablify_dict import tablify_dict
 
 

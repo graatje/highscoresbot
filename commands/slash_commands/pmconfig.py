@@ -2,10 +2,6 @@ from asgiref.sync import sync_to_async
 from discord import app_commands, Interaction
 from discord.ext import commands
 from commands.command_functionality import pmconfig
-from commands.interractions.pmconfig.pmconfig import PmConfigModel
-from commands.interractions.pmconfig.pmswarm import swarmpokemonautocomplete, swarmlocationautocomplete
-from commands.interractions.pmconfig.pmtournament import tournamenttypeautocomplete, tournamentprizeautocomplete
-from commands.interractions.pmconfig.pmworldboss import worldbosspokemonautocomplete, worldbosslocationautocomplete
 from commands.sendable import Sendable
 from db.config.models import Eventname
 from db.eventconfigurations.models import PmConfig

@@ -1,4 +1,3 @@
-import sqlite3
 from typing import Union
 from asgiref.sync import sync_to_async
 from db.highscores.models import Highscore, HighscoreConfig, DefaultClanname
@@ -14,7 +13,7 @@ async def get_highscore_config(highscorename):
     return await func(highscorename=highscorename)
 
 
-async def getdefaultclanname(interaction, comment=True) -> Union[str, None]:
+async def getdefaultclanname(interaction) -> Union[str, None]:
     if interaction.guild is None:
         return None
     try:
@@ -91,7 +90,7 @@ async def top(sendable: Sendable, highscorename, clanname: str=None):
     await sendable.send(messages[0], view=view)
 
 
-async def highscore(sendable: Sendable, highscorename: str, clanname: str=None):
+async def highscore(sendable: Sendable, highscorename: str, clanname: str = None):
     # if the clanname is None and the default is also not present we set the clanname to an empty string.
     # if it is present tho the clanname gets set to the default.
     if clanname is None:

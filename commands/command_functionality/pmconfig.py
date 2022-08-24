@@ -1,16 +1,10 @@
-import sqlite3
 from typing import Union
 
 from asgiref.sync import sync_to_async
 from discord import Interaction
 from discord.ui import TextInput
 from commands.interractions.pmconfig.pmconfig import PmConfigModel
-from commands.interractions.pmconfig.pmgoldrush import PmGoldrush
-from commands.interractions.pmconfig.pmhoney import PmHoney
-from commands.interractions.pmconfig.removepmconfig import RemovePmConfig
-from commands.interractions.selectsview import SelectsView
 from commands.sendable import Sendable
-from commands.utils.utils import getgoldrushlocations, gethoneylocations, getswarmpokemons, getswarmlocations
 from db.config.models import Eventname
 from db.eventconfigurations.models import PmConfig
 
@@ -34,7 +28,6 @@ async def pmconfig(interaction: Interaction, eventname: str):
                                     custom_id=key))
 
     await interaction.response.send_modal(PmConfigModel(textinputs, event=eventobj))
-#    await interaction.response.pong()
 
 
 async def removepmconfig(sendable: Sendable, id):
