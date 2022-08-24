@@ -13,3 +13,6 @@ class PmConfig(models.Model):
         constraints = [
             UniqueConstraint(fields=["event", "user", "data"], name='unique_pmevents'),
         ]
+
+    def fetch_event(self):
+        return self.event
