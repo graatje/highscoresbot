@@ -38,3 +38,5 @@ logs/
 .env
 
 highscores_adder.py
+
+venv/
