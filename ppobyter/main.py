@@ -15,7 +15,7 @@ nest_asyncio.apply()
 
 class Main(discord.Client):
     def __init__(self, **options: Any):
-        super().__init__(**options)
+        super().__init__(**options, intents=discord.Intents.default())
         self.__token = options["token"]
         self.running = False
         self.eventscheduler = EventScheduler(self)

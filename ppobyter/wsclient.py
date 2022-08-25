@@ -2,12 +2,15 @@ import asyncio
 import os
 import threading
 from json import JSONDecodeError
+
+from dotenv import load_dotenv
 from websocket import WebSocketApp
 import json
 
 from ppobyter.eventmaker import EventMaker
 from ppobyter.main import Main
 import log
+load_dotenv()
 logger = log.Logger()
 
 
@@ -73,5 +76,5 @@ class EventClientSocket(WebSocketApp):
 
 if __name__ == "__main__":
     a = EventClientSocket(url="ws://127.0.0.1:8000/api/ingame_data/ws/gamedatareceiver/",
-                          token=os.environ.get("token"))
+                          token=os.environ.get("discordtoken"))
     a.run_forever()
