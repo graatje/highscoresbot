@@ -30,9 +30,9 @@ class GameDataConsumer(JsonWebsocketConsumer):
 
     def receive_json(self, content, **kwargs):
         try:
-            Validators.validateJson(content.get('type', None), content.get('data', {}))
+            Validators.validateJson(content.get('type', None), content)
         except ValidationError as e:
-            self.send_json({'type': 'error', 'message': e.message})
+            self.send_json({'type': 'error', 'command': content.get('type', None), 'msg': e.message})
             return
         actiontype = content.get('type')
         data = content.get('data', {})
@@ -42,7 +42,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
         elif actiontype == "logout":
             self.logout()
         elif actiontype == "event":
-            self.sendall(content)
+            self.ingame_event(content)
         elif actiontype == "requestmaster":
             self.requestMaster()
 
@@ -56,7 +56,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 self.permissionlevel = PermissionLevel.ADMINISTRATOR
             else:
                 self.permissionlevel = PermissionLevel.LOGGED_IN
-            self.send_json({"type": "login", "msg": "success",
+            self.send_json({"type": "success", "command": "login", "msg": "success",
                             "permissionlevel": self.permissionlevel.value})
         else:
             self.send_json({"type": "error", "command": "login", "msg": "Invalid credentials"})
@@ -75,6 +75,12 @@ class GameDataConsumer(JsonWebsocketConsumer):
             return
         self.master = self
         self.send_json({"type": "success", "command": "requestmaster", "msg": "Client set as master."})
+
+    def ingame_event(self, content: dict):
+        if self != self.master:
+            self.send_json({"type": "error", "command": "event", "msg": "Only masters can submit events."})
+            return
+        eventtype = content.get('eventtype')
 
     def sendall(self, content: dict, close=False):
         logger.debug(f"sending to all clients: {content}")
