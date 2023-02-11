@@ -1,6 +1,6 @@
 from django.db import models
 
-from db.ingame_data.models import Worldboss
+from api.ingame_data.models import Worldboss
 
 
 class WorldbossHighscore(models.Model):

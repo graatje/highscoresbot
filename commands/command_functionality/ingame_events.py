@@ -6,7 +6,7 @@ from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import getworldbosstime
 from db.highscores.models import Highscore
-from db.ingame_data.models import Encounter, Chest, Roll, Activity
+from api.ingame_data.models import Encounter, Chest, Roll, Activity
 from utils.tablify_dict import tablify_dict
 
 
@@ -14,7 +14,7 @@ async def lastonline(sendable: Sendable, playername: str=None):
     if playername is not None:
         func = sync_to_async(Activity.objects.get)
         activity_obj: Activity = await func(playername__iexact=playername)
-        await sendable.send(f"{activity_obj.playername} was last online at {activity_obj.get_lastonline()}")
+        await sendable.send(f"{activity_obj.player} was last online at {activity_obj.get_lastonline()}")
     else:
         func = sync_to_async(Activity.objects.aggregate)
         highest_lastonline = await func(Max('lastonline'))
@@ -31,7 +31,7 @@ async def getencounters(sendable: Sendable, searchtype: str, name: str=None):
     if searchtype == "topdates":
         qs = Encounter.objects.values('date').annotate(count=Count('date')).order_by('-count')
     elif searchtype == "topplayers":
-        qs = Encounter.objects.values('playername').annotate(count=Count('playername')).order_by('-count')
+        qs = Encounter.objects.values('player').annotate(count=Count('player')).order_by('-count')
     elif searchtype == "toppokemon":
         qs = Encounter.objects.values('pokemon').annotate(count=Count('pokemon')).order_by('-count')
     elif name is None:
@@ -42,7 +42,7 @@ async def getencounters(sendable: Sendable, searchtype: str, name: str=None):
     elif searchtype == "date":
         qs = Encounter.objects.filter(date=name)
     elif searchtype == "player":
-        qs = Encounter.objects.filter(playername__iexact=name).order_by("date")
+        qs = Encounter.objects.filter(player__iexact=name).order_by("date")
     else:
         raise ValueError(f"invalid searchtype: {searchtype}")
     values = [value async for value in qs]
@@ -57,7 +57,7 @@ async def getchests(sendable: Sendable, searchtype, argument: str=None):
     if searchtype == "topdates":
         qs = Chest.objects.values('date').annotate(count=Count('date')).order_by('-count')
     elif searchtype == "topplayers":
-        qs = Chest.objects.values('playername').annotate(count=Count('playername')).order_by('-count')
+        qs = Chest.objects.values('player').annotate(count=Count('player')).order_by('-count')
     elif searchtype == "toplocations":
         qs = Chest.objects.values('location').annotate(count=Count('location')).order_by('-count')
     elif argument is None:
@@ -68,10 +68,12 @@ async def getchests(sendable: Sendable, searchtype, argument: str=None):
     elif searchtype == "date":
         qs = Chest.objects.filter(date=argument)
     elif searchtype == "player":
-        qs = Chest.objects.filter(playername__iexact=argument).order_by("date")
+        qs = Chest.objects.filter(player__iexact=argument).order_by("date")
     else:
         raise ValueError(f"invalid searchtype: {searchtype}")
+
     values = [value async for value in qs]
+
     if values and hasattr(values[0], "to_json"):
         values = [value.to_json() for value in values]
     messages = tablify_dict(values)
@@ -89,7 +91,7 @@ async def getrolls(sendable: Sendable, searchtype, parameter: str=None):
     if searchtype == "topdates":
         qs = Roll.objects.values('date').annotate(count=Count('date')).order_by('-count')
     elif searchtype == "topplayers":
-        qs = Roll.objects.values('playername').annotate(count=Count('playername')).order_by('-count')
+        qs = Roll.objects.values('player').annotate(count=Count('player')).order_by('-count')
     elif searchtype == "toppokemon":
         qs = Roll.objects.values('pokemon').annotate(count=Count('pokemon')).order_by('-count')
     elif parameter is None:
@@ -100,7 +102,7 @@ async def getrolls(sendable: Sendable, searchtype, parameter: str=None):
     elif searchtype == "date":
         qs = Roll.objects.filter(date=parameter)
     elif searchtype == "player":
-        qs = Roll.objects.filter(playername__iexact=parameter).order_by("date")
+        qs = Roll.objects.filter(player__iexact=parameter).order_by("date")
     else:
         raise ValueError(f"invalid searchtype: {searchtype}")
     values = [value async for value in qs]
@@ -114,8 +116,8 @@ async def getrolls(sendable: Sendable, searchtype, parameter: str=None):
 async def getclanencounters(sendable: Sendable, clanname: str):
     usernames = set([value.data["username"] async for value in
                  Highscore.objects.filter(data__clan__iexact=clanname, data__has_key="username")])
-    values = [value.to_json() async for value in Encounter.objects.filter(playername__in=usernames).order_by("-date")]
-    messages = tablify_dict(values, order=["date", "playername", "pokemon"], max_length=1800)
+    values = [value.to_json() async for value in Encounter.objects.filter(player__in=usernames).order_by("-date")]
+    messages = tablify_dict(values, order=["date", "player", "pokemon"], max_length=1800)
     resultmessageshower = ResultmessageShower(messages, sendable)
     await sendable.send(
         content=f"page {resultmessageshower.currentpage} of {resultmessageshower.maxpage}\n" + messages[0],

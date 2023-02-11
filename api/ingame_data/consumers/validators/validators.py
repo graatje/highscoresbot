@@ -117,6 +117,10 @@ class Validators:
                                 },
                                 "location": {
                                     "type": "string"
+                                },
+                                "date": {
+                                    "type": "string",
+                                    "format": "date"
                                 }
                             },
                             "required": ["player", "location"],
@@ -159,7 +163,7 @@ class Validators:
                                     "type": "string",
                                 },
                                 "bpthirdplace": {
-                                    "type": "string",
+                                    "type": "number",
                                 },
                                 "bestplayer": {
                                     "type": "string",
@@ -197,6 +201,10 @@ class Validators:
                                 },
                                 "region": {
                                     "enum": ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova"]
+                                },
+                                "date": {
+                                    "type": "string",
+                                    "format": "date"
                                 }
                             },
                             "required": ["player", "region"],
@@ -228,6 +236,10 @@ class Validators:
                                 },
                                 "pokemon": {
                                     "type": "string",
+                                },
+                                "date": {
+                                    "type": "string",
+                                    "format": "date"
                                 }
                             },
                             "required": ["player", "level", "pokemon"],
@@ -309,6 +321,10 @@ class Validators:
                                 },
                                 "pokemon": {
                                     "type": "string",
+                                },
+                                "date": {
+                                    "type": "string",
+                                    "format": "date"
                                 }
                             },
                             "required": ["player", "level", "pokemon"],
@@ -399,7 +415,11 @@ class Validators:
                                 },
                                 "location": {
                                     "type": "string",
-                                }
+                                },
+                                "date": {
+                                    "type": "string",
+                                    "format": "date"
+                                },
                             },
                             "required": ["location", "pokemon"],
                         },
@@ -428,11 +448,8 @@ class Validators:
                                 "minutes": {
                                     "type": "number",
                                 },
-                                "location": {
-                                    "type": "number",
-                                },
                             },
-                            "required": ["location", "pokemon1", "pokemon2"],
+                            "required": ["hours", "minutes"],
                         },
                     },
                     "required": ["data"]
@@ -455,4 +472,13 @@ class Validators:
 
 
 if __name__ == "__main__":
-    Validators.validateJson('event', {"type": "event", "eventtype": "goldrush", "data": {"location": "mt moon"}})
+    Validators.validateJson('event', {
+    "type": "event",
+    "eventtype": "tournament",
+    "data": {
+        "tournament": "Monotype",
+        "minstillstart": "30",
+        "prizes": "PvP Token (250), Credit (400), 30 Day GM Ticket (1)"
+    }
+})
+    #Validators.validateJson('event', {"type": "event", "eventtype": "goldrush", "data": {"location": "mt moon"}})

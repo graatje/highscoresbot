@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import datetime
+import re
 from typing import List
 
 from django.contrib.auth import authenticate
@@ -9,7 +12,7 @@ from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser, User
 from api.enums import PermissionLevel
 from api.ingame_data.consumers.validators.validators import Validators
-
+from api.ingame_data.objectmapping import objectmapping
 logger = log.Logger()
 
 
@@ -81,6 +84,26 @@ class GameDataConsumer(JsonWebsocketConsumer):
             self.send_json({"type": "error", "command": "event", "msg": "Only masters can submit events."})
             return
         eventtype = content.get('eventtype')
+
+        self.sendall(content)
+
+        model = objectmapping.get(eventtype, None)
+
+        if model is None:
+            return
+
+        for key, val in content['data'].items():
+            if type(val) != str:
+                continue
+            try:
+                if re.match(r"\d{4}-\d{1,2}-\d{1,2}", val):
+                    content['data'][key] = datetime.datetime.strptime(val, "%Y-%m-%d")
+            except ValueError as e:
+                print(e)
+
+        obj = model.objects.create(**content['data'])
+
+        obj.save()
 
     def sendall(self, content: dict, close=False):
         logger.debug(f"sending to all clients: {content}")
