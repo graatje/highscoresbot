@@ -33,11 +33,11 @@ class GameDataConsumer(JsonWebsocketConsumer):
 
     def receive_json(self, content, **kwargs):
         try:
-            Validators.validateJson(content.get('type', None), content)
+            Validators.validateJson(content.get('command', None), content)
         except ValidationError as e:
-            self.send_json({'type': 'error', 'command': content.get('type', None), 'msg': e.message})
+            self.send_json({'type': 'error', 'command': content.get('command', None), 'msg': e.message})
             return
-        actiontype = content.get('type')
+        actiontype = content.get('command')
         data = content.get('data', {})
 
         if actiontype == "login":
@@ -84,6 +84,9 @@ class GameDataConsumer(JsonWebsocketConsumer):
             self.send_json({"type": "error", "command": "event", "msg": "Only masters can submit events."})
             return
         eventtype = content.get('eventtype')
+
+        # Data is already validated before this method is called so type is success.
+        content["type"] = "success"
 
         self.sendall(content)
 

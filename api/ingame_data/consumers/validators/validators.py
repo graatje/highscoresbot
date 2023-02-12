@@ -461,7 +461,7 @@ class Validators:
     @classmethod
     def validateJson(cls, actiontype, jsonData):
         if actiontype is None:
-            raise jsonschema.ValidationError("'type' is a required property")
+            raise jsonschema.ValidationError("'command' is a required property")
 
         # @todo replace with switch when moved to python 3.11
         if actiontype == "login":
