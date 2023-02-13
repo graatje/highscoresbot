@@ -39,15 +39,15 @@ class EventClientSocket(WebSocketApp):
         # any other exceptions will get handled by on_error
 
     def on_json_message(self, message: dict):
-        msgtype = message.get("type", None)
+        msgtype = message.get("command", None)
         if msgtype is None:
             logger.debug("message type not provided")
             return
 
-        if msgtype == "ingamedata":
+        if msgtype == "event":
             logger.debug("message type is ingame data")
             event = EventMaker.makeEvent(eventname=message.get("eventtype", None),
-                                         kwargs=message.get("data", {}))
+                                         **message.get("data", {}))
 
             if event is not None:
                 logger.debug(f"following event made: {event}")
@@ -58,7 +58,6 @@ class EventClientSocket(WebSocketApp):
         self.send(data=json.dumps(message))
 
     def on_error(self, error):
-        self.send_json({"error": "an error has occured."})
         logger.exception(f"an exception has occured: {str(error)}")
 
     def on_close(self, close_status_code, close_msg):

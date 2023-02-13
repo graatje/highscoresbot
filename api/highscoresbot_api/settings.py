@@ -30,9 +30,9 @@ ASGI_APPLICATION = 'api.highscoresbot_api.asgi.application'
 # Application definition
 
 INSTALLED_APPS = [
-    # "highscores",
-    'api.highscores',
     'api.ingame_data',
+    'api.highscores',
+    'ppobyter',
     'api.eventconfigurations',
     # "config",
     # "rest_framework",
