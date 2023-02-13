@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import UniqueConstraint
 
-from db.highscores.models.highscoreconfig import HighscoreConfig
+from api.highscores.models.highscoreconfig import HighscoreConfig
 
 
 class Highscore(models.Model):

@@ -1,6 +1,6 @@
 from typing import Union
 from asgiref.sync import sync_to_async
-from db.highscores.models import Highscore, HighscoreConfig, DefaultClanname
+from api.highscores.models import Highscore, HighscoreConfig, DefaultClanname
 from commands.interractions.highscore_command import HighscoreCommand
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable

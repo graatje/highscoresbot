@@ -4,7 +4,7 @@ from asgiref.sync import sync_to_async
 from discord import Interaction
 
 from commands.interractions.browseselection import BrowseSelection
-from db.highscores.models import HighscoreConfig, Highscore
+from api.highscores.models import HighscoreConfig, Highscore
 from utils.tablify_dict import tablify_dict
 
 

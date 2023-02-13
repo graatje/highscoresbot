@@ -5,7 +5,7 @@ from django.db.models import Count, Max
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import getworldbosstime
-from db.highscores.models import Highscore
+from api.highscores.models import Highscore
 from api.ingame_data.models import Encounter, Chest, Roll, Activity
 from utils.tablify_dict import tablify_dict
 
