@@ -11,7 +11,7 @@ from commands.interractions.miscellaneous.help_cmd import HelpCmd
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.interractions.selectsview import SelectsView
 from commands.sendable import Sendable
-from db.highscores.models import Highscore, WorldbossHighscore, DefaultClanname
+from api.highscores.models import Highscore, WorldbossHighscore, DefaultClanname
 
 from ppobyter.marketplace.item import Item
 from ppobyter.marketplace.pokemon import Pokemon

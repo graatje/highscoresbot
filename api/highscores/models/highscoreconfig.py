@@ -10,6 +10,7 @@ class HighscoreConfig(models.Model):
     # needed because it needs to be a valid variable name to be able to filter it.
     fieldmapping = models.JSONField()
     verbose_name = models.TextField(default="")
+    intfields = models.JSONField()
 
     def __str__(self):
         return self.highscorename

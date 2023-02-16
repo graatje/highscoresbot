@@ -1,6 +1,5 @@
 import time
 from typing import Tuple
-import pandas
 import lxml
 import requests
 from lxml import html

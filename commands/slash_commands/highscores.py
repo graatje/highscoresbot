@@ -1,9 +1,9 @@
 import sqlite3
 from typing import Union
 
-from discord import app_commands, Interaction, InteractionResponse
+from discord import app_commands, Interaction
 from discord.ext import commands
-from db.highscores.models import Highscore, HighscoreConfig
+from api.highscores.models import HighscoreConfig
 from commands.command_functionality import highscores
 from commands.sendable import Sendable
 
