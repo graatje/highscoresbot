@@ -12,5 +12,8 @@ class Command(BaseCommand, ABC):
     def handle(self, *args, **options):
         websession = PpoWebSession(os.environ.get('ppousername'), os.environ.get('ppopassword'))
         websession.login()
-        highscores_updater = HighscoresUpdater(websession)
+        highscores_updater = HighscoresUpdater(websession,
+                                               timeout=int(os.environ.get("webscraperequestinterval", 5)),
+                                               onerrortimeout=int(os.environ.get("onwebscrapeerrortimeout", 300))
+                                               )
         highscores_updater.updateHighscores()

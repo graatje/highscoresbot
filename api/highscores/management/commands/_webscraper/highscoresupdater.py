@@ -15,9 +15,10 @@ class HighscoresUpdater:
     steps:
     1. get the available highscores and their configurations via the API.
     """
-    def __init__(self, websession: PpoWebSession, timeout=5):
+    def __init__(self, websession: PpoWebSession, timeout=5, onerrortimeout=300):
         self.__ppowebsession: PpoWebSession = websession
         self.__timeout = timeout
+        self.__onerrortimeout = onerrortimeout
 
     def updateHighscores(self):
         while True:
@@ -35,6 +36,7 @@ class HighscoresUpdater:
         except Exception as e:
             logger.warning(f"error updating highscore {config.verbose_name}")
             logger.exception(e)
+            time.sleep(self.__onerrortimeout)
 
     def __updateHighscorePage(self, config: HighscoreConfig, page):
         inverted_fieldmapping = {v: k for k, v in config.fieldmapping.items()}
