@@ -12,7 +12,7 @@ from discord.utils import MISSING
 from typing import Union
 
 from db.config.models import Eventname
-from db.eventconfigurations.models import EventconfigPermissions, Eventconfiguration, Clanconfig, Playerconfig
+from api.eventconfigurations.models import EventconfigPermissions, Eventconfiguration, Clanconfig, Playerconfig
 
 """
 Eventconfig utilities

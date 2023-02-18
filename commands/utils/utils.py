@@ -3,7 +3,7 @@ import datetime
 from typing import List
 from numpy import isnan
 
-from db.eventconfigurations.models import EventconfigPermissions
+from api.eventconfigurations.models import EventconfigPermissions
 
 
 def replacenan(list, replacement):

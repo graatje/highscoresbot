@@ -4,7 +4,8 @@ import discord
 from discord.ui import TextInput
 
 from db.config.models import Eventname
-from db.eventconfigurations.models import PmConfig
+from api.eventconfigurations.models import PmConfig
+
 
 class PmConfigModel(discord.ui.Modal, title="MINE"):
     def __init__(self, textinputs: List[TextInput], event: Eventname):
