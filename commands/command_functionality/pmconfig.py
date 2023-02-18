@@ -6,7 +6,7 @@ from discord.ui import TextInput
 from commands.interractions.pmconfig.pmconfig import PmConfigModel
 from commands.sendable import Sendable
 from db.config.models import Eventname
-from db.eventconfigurations.models import PmConfig
+from api.eventconfigurations.models import PmConfig
 
 
 async def getEventObject(eventname: str) -> Union[Eventname, None]:

@@ -4,7 +4,7 @@ from discord.ext import commands
 from commands.command_functionality import pmconfig
 from commands.sendable import Sendable
 from db.config.models import Eventname
-from db.eventconfigurations.models import PmConfig
+from api.eventconfigurations.models import PmConfig
 
 
 async def eventnameautocomplete(interaction: Interaction, current: str):

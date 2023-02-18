@@ -5,7 +5,7 @@ from discord.ext import commands
 from commands.command_functionality import eventconfigurations
 from commands.sendable import Sendable
 from db.config.models import Eventname
-from db.eventconfigurations.models import Eventconfiguration, Playerconfig
+from api.eventconfigurations.models import Eventconfiguration, Playerconfig
 
 
 async def permissionactionautocomplete(interaction: Interaction, current: str):
