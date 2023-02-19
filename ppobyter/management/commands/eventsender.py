@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from ppobyter.wsclient import EventClientSocket
 
+
 class Command(BaseCommand, ABC):
     help = 'Starts the part that listens for ingame data and sends them to discord.'
 

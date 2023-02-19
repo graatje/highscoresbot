@@ -16,8 +16,8 @@ class Encounter(ClanEvent):
         :param level: The level of the encountered pokemon.
         """
         # @todo mining encounter?
-        self.pokemon = pokemon.lower()
-        self.level = level.lower()
+        self.pokemon = pokemon
+        self.level = level
         self.EVENTNAME = "encounter"
         super(Encounter, self).__init__(player)
 

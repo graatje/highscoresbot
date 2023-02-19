@@ -1,6 +1,6 @@
-import sqlite3
 import discord
-from typing import Union
+from typing import Union, List
+from api.eventconfigurations.models import Eventconfiguration, PmConfig
 
 
 class Event:
@@ -14,10 +14,7 @@ class Event:
         It also calls the determineRecipients method.
         """
         self.EVENTNAME: str
-        # pingroles should be same size as recipients.
-        self._pingroles = []
-        self._recipients = []
-        self._alive_time = []
+        self._recipients: List[Eventconfiguration] = []
         self._pmrecipients = []
         self.determineRecipients()
 
@@ -34,11 +31,8 @@ class Event:
         Base method for determining channel recipients based on eventname.
         :return:
         """
-        #@todo connect to api
-        result = [[890306062211772516, None, None]]
-        self._recipients = [row[0] for row in result]
-        self._pingroles = [row[1] for row in result]
-        self._alive_time = [row[2] for row in result]
+        self._recipients = list(Eventconfiguration.objects.filter(channel__isnull=False, eventname=self.EVENTNAME))
+        print(self._recipients)
 
     def makeMessage(self) -> Union[str, discord.Embed]:
         """
@@ -53,28 +47,23 @@ class Event:
         send the event to all recipients.
         :param client, the discord client
         """
-        for channelindex in range(len(self._recipients)):
+        for configuration in self._recipients:
             try:
-                chan = await client.fetch_channel(self._recipients[channelindex])
+                chan = await client.fetch_channel(configuration.channel)
                 msg = self.makeMessage()
-                if self._pingroles and self._pingroles[channelindex] is not None and type(msg) != discord.Embed:
-                    msg += f"<@&{self._pingroles[channelindex]}>"
+                if configuration.pingrole is not None and type(msg) != discord.Embed:
+                    msg += f"<@&{configuration.pingrole}>"
+
                 if type(msg) == discord.embeds.Embed:
-                    if self._alive_time[channelindex] is not None:
-                        await chan.send(embed=msg, delete_after=self._alive_time[channelindex]*60)
-                    else:
-                        await chan.send(embed=msg)
+                    await chan.send(embed=msg, delete_after=configuration.time_in_channel * 60 if configuration.time_in_channel else configuration.time_in_channel)
                 else:
-                    if self._alive_time[channelindex] is not None:
-                        await chan.send(msg, delete_after=self._alive_time[channelindex]*60)
-                    else:
-                        await chan.send(msg)
+                    await chan.send(msg, delete_after=configuration.time_in_channel * 60 if configuration.time_in_channel else configuration.time_in_channel)
             except Exception as e:
-                # probably 403 forbidden exceptions etc, those exceptions will be catched and ignored in the future.
-                print(e)
-        for user in self._pmrecipients:
+                print(e, configuration)
+
+        for pmconfig in self._pmrecipients:
             try:
-                user = await client.fetch_user(user)
+                user = await client.fetch_user(pmconfig.user)
                 await user.send(self.makeMessage())
             except Exception as e:
                 # probably 403 forbidden exceptions etc, those exceptions will be catched and ignored in the future.
