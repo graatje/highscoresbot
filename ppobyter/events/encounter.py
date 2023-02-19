@@ -38,6 +38,7 @@ class Encounter(ClanEvent):
             shiny = True
         pokemonname = self.pokemon.replace("[s]", "")
         pokemonname = pokemonname.replace("[e]", "")
+
         if shiny:
             gif = r"http://play.pokemonshowdown.com/sprites/ani-shiny/{}.gif".format(pokemonname)
         else:

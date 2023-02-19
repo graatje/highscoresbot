@@ -35,7 +35,3 @@ class IndividualBomb(ClanEvent):
                                           f"item bomb!",
                               colour=discord.Colour.magenta())
         return embed
-
-
-if __name__ == "__main__":
-    text = "('itembomb', {'players': ['ferb', 'paulwalker', 'blackangelbr', 'n3tr0xx', 'kiencuibap1472', 'acex93', 'benmin', 'curtbertmoon', 'pokemongame2', 'ndginferno'], 'prizesamount': [['Mystery Box', '1'], ['Evolutional Stone Box', '1'], ['Evolutional Stone Box', '1'], ['Max Repel', '1'], ['Ultra Ball', '6'], ['1 Day GM Ticket', '1'], ['Ultra Ball', '1'], ['Evolutional Stone Box', '1'], ['30 Day GM Ticket', '1'], ['1 Day GM Ticket', '1']]})"

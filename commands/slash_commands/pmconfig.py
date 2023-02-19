@@ -3,7 +3,7 @@ from discord import app_commands, Interaction
 from discord.ext import commands
 from commands.command_functionality import pmconfig
 from commands.sendable import Sendable
-from db.config.models import Eventname
+from api.ingame_data.models import Eventname
 from api.eventconfigurations.models import PmConfig
 
 

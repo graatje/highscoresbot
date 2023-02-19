@@ -3,7 +3,6 @@ import datetime
 import discord
 
 from ppobyter.events.clanevent import ClanEvent
-import sqlite3
 
 
 class Roll(ClanEvent):
