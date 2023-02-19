@@ -46,7 +46,6 @@ class HighscoresUpdater:
         rankindex = -1
         layout = []
 
-        createdobjs = []
         updatedobjs = []
         for i, row in df.iterrows():
             row = [i if type(i) == str else '' for i in list(row)]
@@ -58,9 +57,10 @@ class HighscoresUpdater:
             obj, created = Highscore.objects.update_or_create(rank=int(row[rankindex]),
                                                               highscore=config,
                                                               defaults={"data": {layout[columnindex]: strip_characters(row[columnindex]) if config.intfields[layout[columnindex]] else row[columnindex] for columnindex in range(len(row))}})
-            createdobjs.append(obj) if created else updatedobjs.append(obj)
+            if created:
+                obj.save()
+            else:
+                updatedobjs.append(obj)
 
         if updatedobjs:
             Highscore.objects.bulk_update(updatedobjs, ['data'])
-        if createdobjs:
-            Highscore.objects.bulk_create(createdobjs)

@@ -1,5 +1,4 @@
-import sqlite3
-
+from api.eventconfigurations.models import PmConfig
 from .event import Event
 
 
@@ -37,8 +36,4 @@ class Honey(Event):
         Determines the recipients for pm. If a user has configured that he wants a pm if honey gets spread at that
         location he gets a pm.
         """
-        conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
-        cur = conn.cursor()
-        cur.execute("SELECT playerid FROM pmhoney WHERE location=?", (self.location,))
-        self._pmrecipients = list(set([row[0] for row in cur.fetchall()]))
-        conn.close()
+        self._pmrecipients = list(PmConfig.objects.filter(event=self.EVENTNAME, data__location__iexact=self.location))

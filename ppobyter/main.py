@@ -38,6 +38,5 @@ class Main(discord.Client):
         self.eventscheduler.addEvent(event)
 
 
-
 if __name__ == "__main__":
     Main(token=os.environ.get("token")).run()

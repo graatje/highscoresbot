@@ -16,8 +16,8 @@ class Encounter(ClanEvent):
         :param level: The level of the encountered pokemon.
         """
         # @todo mining encounter?
-        self.pokemon = pokemon.lower()
-        self.level = level.lower()
+        self.pokemon = pokemon
+        self.level = level
         self.EVENTNAME = "encounter"
         super(Encounter, self).__init__(player)
 
@@ -38,6 +38,7 @@ class Encounter(ClanEvent):
             shiny = True
         pokemonname = self.pokemon.replace("[s]", "")
         pokemonname = pokemonname.replace("[e]", "")
+
         if shiny:
             gif = r"http://play.pokemonshowdown.com/sprites/ani-shiny/{}.gif".format(pokemonname)
         else:

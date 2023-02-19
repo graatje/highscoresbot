@@ -1,3 +1,4 @@
+from api.eventconfigurations.models import PmConfig
 from .event import Event
 import json
 import sqlite3
@@ -39,6 +40,7 @@ class Swarm(Event):
         This determines the users that will receive a pm when this event shows up.
         They can either get a message for the location, or one of the pokemon, or a combination of both.
         """
+        #@todo
         conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
         query = "SELECT playerid FROM pmswarm WHERE (location=? AND (pokemon=? OR pokemon=?) AND comparator='&') " \
                 "OR ((location=? OR (pokemon=? OR pokemon=?)) AND comparator='|')"

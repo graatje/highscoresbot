@@ -1,5 +1,6 @@
 import sqlite3
 
+from api.eventconfigurations.models import PmConfig
 from .event import Event
 
 
@@ -37,8 +38,4 @@ class Goldrush(Event):
         Determines the recipients for pm, if users have configured they want a pm if a goldrush shows up on the location
         the current gold rush is at they get a pm.
         """
-        conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
-        cur = conn.cursor()
-        cur.execute("SELECT playerid FROM pmgoldrush WHERE location=?", (self.location,))
-        self._pmrecipients = list(set([row[0] for row in cur.fetchall()]))
-        conn.close()
+        self._pmrecipients = list(PmConfig.objects.filter(event=self.EVENTNAME, data__location__iexact=self.location))
