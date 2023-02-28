@@ -2,7 +2,7 @@ from typing import List
 import discord
 from django.db import IntegrityError
 
-from db.config.models import Eventname
+from api.ingame_data.models import Eventname
 from api.eventconfigurations.models import Eventconfiguration
 from asgiref.sync import sync_to_async
 from commands.interractions.selectsutility import SelectsUtility

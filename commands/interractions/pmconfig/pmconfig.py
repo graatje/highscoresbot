@@ -3,7 +3,7 @@ from typing import List
 import discord
 from discord.ui import TextInput
 
-from db.config.models import Eventname
+from api.ingame_data.models import Eventname
 from api.eventconfigurations.models import PmConfig
 
 

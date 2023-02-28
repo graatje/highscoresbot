@@ -7,6 +7,7 @@ from discord.ext.commands import Context
 
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.utils.utils import tablify, datehandler
+from api.ingame_data.models import Encounter
 
 
 class GetEncounters(discord.ui.View):
