@@ -1,7 +1,37 @@
 import os
 import traceback
 from dotenv import load_dotenv
-from db import init_django
+def init_django():
+    print("initializing django")
+    import django
+    from django.core.wsgi import get_wsgi_application
+    from django.conf import settings
+
+    if settings.configured:
+        return
+
+    settings.configure(
+        INSTALLED_APPS=[
+            'api.highscores',
+            'api.ingame_data',
+            'api.eventconfigurations'
+        ],
+        DATABASES={
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'pokemon_planet_api',
+                'USER': os.environ.get("PGUSERNAME"),
+                "PASSWORD": os.environ.get("PASSWORD"),
+                "HOST": "127.0.0.1",
+                "PORT": 5432
+            }
+        },
+        DEFAULT_AUTO_FIELD='django.db.models.BigAutoField',
+        SECRET_KEY='django-insecure-$cd9u9q)e%7+v7gg#g1ulnr^d18qq%z20454bivhryc!xkx89$'
+    )
+    django.setup()
+    application = get_wsgi_application()
+
 import discord
 from discord import Forbidden, NotFound
 from discord.ext import commands
@@ -19,10 +49,10 @@ class Main(commands.Bot):
         # self.cog_files = ["commands.ingame_events", "commands.highscores", "commands.eventconfig",
         #                   "commands.miscellaneous", "commands.pmconfig"]
         self.cog_files = ["commands.slash_commands.highscores",
-                          "commands.slash_commands.eventconfigurations",
-                          "commands.slash_commands.ingame_events",
+                         "commands.slash_commands.eventconfigurations",
+                         "commands.slash_commands.ingame_events",
                           "commands.slash_commands.miscellaneous",
-                          "commands.slash_commands.pmconfig",
+                          #"commands.slash_commands.pmconfig",
                           # "commands.slash_commands.discordbinding",
                           # "commands.msgcontent_commands.msgcontent_highscores"
                           ]

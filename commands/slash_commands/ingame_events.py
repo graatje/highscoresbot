@@ -42,10 +42,10 @@ class IngameEvents(commands.Cog):
     ingameeventsgroup = app_commands.Group(name="ingame-events",
                                            description="deals with stuff that has been acquired from inside the game itself")
 
-    @ingameeventsgroup.command(name="lastonline")
-    async def lastonline(self, interaction: Interaction, playername: str=None):
-        sendable = Sendable(interaction)
-        await ingame_events.lastonline(sendable, playername)
+    # @ingameeventsgroup.command(name="lastonline")
+    # async def lastonline(self, interaction: Interaction, playername: str=None):
+    #     sendable = Sendable(interaction)
+    #     await ingame_events.lastonline(sendable, playername)
 
     @ingameeventsgroup.command(name="getencounters")
     @app_commands.autocomplete(searchtype=getpokemonsearchtypeautocomplete)
@@ -70,10 +70,10 @@ class IngameEvents(commands.Cog):
         sendable = Sendable(interaction)
         await ingame_events.getclanencounters(sendable, clanname)
 
-    @ingameeventsgroup.command(name="worldbosstime")
-    async def worldbosstime(self, interaction: Interaction):
-        sendable = Sendable(interaction)
-        await ingame_events.worldbosstime(sendable)
+    # @ingameeventsgroup.command(name="worldbosstime")
+    # async def worldbosstime(self, interaction: Interaction):
+    #     sendable = Sendable(interaction)
+    #     await ingame_events.worldbosstime(sendable)
 
 
 async def setup(client):

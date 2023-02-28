@@ -11,7 +11,7 @@ from commands.utils.utils import haspermissions, tablify
 from discord.utils import MISSING
 from typing import Union
 
-from db.config.models import Eventname
+from api.ingame_data.models import Eventname
 from api.eventconfigurations.models import EventconfigPermissions, Eventconfiguration, Clanconfig, Playerconfig
 
 """

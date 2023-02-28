@@ -1,6 +1,6 @@
-import sqlite3
 from typing import Union
 
+from api.eventconfigurations.models import Clanconfig
 from discord import app_commands, Interaction
 from discord.ext import commands
 from api.highscores.models import HighscoreConfig
@@ -33,10 +33,6 @@ class Highscores(commands.Cog):
 
     @highscoresgroup.command(name="getclan")
     async def getclan(self, interaction: Interaction, clanname: str = None):
-
-       # InteractionResponse.is_done()
-        #await interaction.response.pong()
-        #await interaction.response.defer(thinking=False)
         await highscores.getclan(Sendable(interaction), clanname)
 
     @highscoresgroup.command(name="top")
@@ -63,18 +59,13 @@ class Highscores(commands.Cog):
     async def getdefaultclanname(self, sendable: Sendable, comment=True) -> Union[str, None]:
         if sendable.guild is None:
             return
-        conn = sqlite3.connect(self.databasepath)
-        cur = conn.cursor()
-        cur.execute("SELECT name FROM clannames WHERE id=?", (sendable.guild.id,))
-        try:
-            clanname = cur.fetchall()[0][0]
-        except IndexError:
-            clanname = None
-        if clanname is None and comment:
+
+        clanconf = await Clanconfig.objects.aget(guild=sendable.guild.id)
+        if clanconf is not None:
+            return clanconf.clan.lower()
+        if clanconf is None and comment:
             await sendable.send("Please register a default clanname or provide a clan in the command.")
-        elif clanname is not None:
-            clanname = clanname.lower()
-        return clanname
+        return None
 
 
 async def setup(client: commands.Bot):
