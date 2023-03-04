@@ -6,7 +6,7 @@ class Activity(models.Model):
     lastonline = models.DateTimeField()
 
     def __str__(self):
-        return f"{self.playername} last online at: {self.lastonline}"
+        return f"{self.player} last online at: {self.lastonline}"
 
     def get_lastonline(self, obscurified=True):
         return self.lastonline.date() if obscurified else self.lastonline
