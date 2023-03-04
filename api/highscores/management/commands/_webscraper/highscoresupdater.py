@@ -56,7 +56,8 @@ class HighscoresUpdater:
                 continue
             obj, created = Highscore.objects.update_or_create(rank=int(row[rankindex]),
                                                               highscore=config,
-                                                              defaults={"data": {layout[columnindex]: strip_characters(row[columnindex]) if config.intfields[layout[columnindex]] else row[columnindex] for columnindex in range(len(row))}})
+                                                              defaults={"data": {layout[columnindex]: strip_characters(row[columnindex])
+                                                              if config.intfields[layout[columnindex]] else row[columnindex] for columnindex in range(len(row)) if columnindex != rankindex}})
             if created:
                 obj.save()
             else:

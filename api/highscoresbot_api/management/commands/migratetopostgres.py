@@ -132,4 +132,4 @@ class Command(BaseCommand, ABC):
             permissions = []
             for row in cur.fetchall():
                 permissions.append(EventconfigPermissions(guild=row[0], role=row[1]))
-            EventconfigPermissions.objects.bulk_create(permissions)
+            EventconfigPermissions.objects.bulk_create(permissions, ignore_conflicts=True)
