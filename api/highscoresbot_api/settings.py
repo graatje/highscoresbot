@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'api.highscores',
     'ppobyter',
     'api.eventconfigurations',
+    'api.highscoresbot_api',
     # "config",
     # "rest_framework",
     'django.contrib.admin',

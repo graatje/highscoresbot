@@ -1,10 +1,12 @@
+import datetime
+
 from django.db import models
 
 
 class Encounter(models.Model):
     player = models.TextField(max_length=50)
     pokemon = models.TextField(max_length=50)
-    date = models.DateField(auto_now=True)
+    date = models.DateField(default=datetime.date.today)
     level = models.PositiveSmallIntegerField(null=True)
 
     def to_json(self):

@@ -9,5 +9,5 @@ class Playerconfig(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(Lower("player").desc(), "player", name='unique_playerconfig'),  # a player can be configured only once per guild
+            UniqueConstraint(name='unique_playerconfig', fields=["player", "guild"]),  # a player can be configured only once per guild
         ]
