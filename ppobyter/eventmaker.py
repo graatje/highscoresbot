@@ -49,11 +49,11 @@ class EventMaker:
         elif eventname == "tournament":
             prizes = [prize.strip() for prize in kwargs["prizes"].split(",")]
             event = Tournament(kwargs["tournament"], prizes)
-        elif eventname == "arceusaltar":
+        elif eventname == "altar" and kwargs["altartype"] == "Arceus":
             event = ArceusAltar(kwargs["player"], kwargs["amount"])
-        elif eventname == "kyogrealtar":
+        elif eventname == "altar" and kwargs["altartype"] == "Kyogre":
             event = KyogreAltar(kwargs["player"], kwargs["amount"])
-        elif eventname == "dianciealtar":
+        elif eventname == "altar" and kwargs["altartype"] == "Diancie":
             event = DiancieAltar(kwargs["player"], kwargs["amount"])
         elif eventname == "encounter":
             event = Encounter(kwargs["player"], kwargs["pokemon"], kwargs["level"])
