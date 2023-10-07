@@ -21,7 +21,7 @@ class Validators:
         "type": "object",
         "properties": {
             "eventtype": {
-                "enum": ['altar', 'altaramounts', 'chest', 'cwend', 'elite4', 'encounter', 'goldrush', 'honey', 'roll', 'swarm', 'tournament', 'worldboss', 'worldbosstime']
+                "enum": ['altar', 'altaramounts', 'chest', 'cwend', 'elite4', 'encounter', 'goldrush', 'honey', 'itembomb', 'roll', 'swarm', 'tournament', 'worldboss', 'worldbosstime']
             },
         },
         "required": ["eventtype"],
@@ -293,6 +293,33 @@ class Validators:
                                 }
                             },
                             "required": ["location"],
+                        },
+                    },
+                    "required": ["data"]
+                }
+            },
+            # itembomb
+            {
+                "if": {
+                    "properties": {
+                        "eventtype": {
+                            "const": "itembomb"
+                        },
+                    },
+                    "required": ["eventtype"],
+                },
+                "then": {
+                    "properties": {
+                        "data": {
+                                "type": "object",
+                                "properties": {
+                                    "player": {
+                                        "type": "string",
+                                    },
+                                    "item": {
+                                        "type": "string",
+                                    },
+                                },
                         },
                     },
                     "required": ["data"]
