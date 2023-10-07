@@ -1,6 +1,12 @@
 import os
 import traceback
+
+from asgiref.sync import sync_to_async
 from dotenv import load_dotenv
+
+from api.eventconfigurations.models import Eventconfiguration
+
+
 def init_django():
     print("initializing django")
     import django
@@ -133,7 +139,11 @@ class Main(commands.Bot):
         if temp != "```":
             await chan.send(temp + "```")
 
-            
+    async def on_guild_remove(self, guild):
+        filtered = await sync_to_async(Eventconfiguration.objects.filter)(guild=guild.id)
+        await sync_to_async(filtered.delete)()
+
+
 if __name__ == "__main__":
     client = Main()
     client.run(os.environ.get("discordtoken"))
