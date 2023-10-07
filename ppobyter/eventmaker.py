@@ -14,7 +14,7 @@ from ppobyter.events.honey import Honey
 from ppobyter.events.encounter import Encounter
 
 from ppobyter.events.chest import Chest
-from ppobyter.events.itembomb import ItemBomb
+from ppobyter.events.itembomb import IndividualBomb
 from ppobyter.events.roll import Roll
 
 
@@ -64,7 +64,7 @@ class EventMaker:
         elif eventname == "roll":
             event = Roll(kwargs["player"], kwargs["pokemon"], kwargs["level"])
         elif eventname == "itembomb":
-            event = ItemBomb(kwargs["players"], kwargs["prizesamount"])
+            event = IndividualBomb(kwargs["player"], kwargs["item"])
         return event
 
 
