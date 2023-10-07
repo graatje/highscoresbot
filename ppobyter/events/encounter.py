@@ -34,10 +34,10 @@ class Encounter(ClanEvent):
         :return: discord embed
         """
         shiny = False
-        if '[s]' in self.pokemon:
+        if '[S]' in self.pokemon:
             shiny = True
-        pokemonname = self.pokemon.replace("[s]", "")
-        pokemonname = pokemonname.replace("[e]", "")
+        pokemonname = self.pokemon.replace("[S]", "")
+        pokemonname = pokemonname.replace("[E]", "")
 
         if shiny:
             gif = r"http://play.pokemonshowdown.com/sprites/ani-shiny/{}.gif".format(pokemonname.lower())
