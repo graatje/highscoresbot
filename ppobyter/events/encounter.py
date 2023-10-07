@@ -40,9 +40,9 @@ class Encounter(ClanEvent):
         pokemonname = pokemonname.replace("[e]", "")
 
         if shiny:
-            gif = r"http://play.pokemonshowdown.com/sprites/ani-shiny/{}.gif".format(pokemonname)
+            gif = r"http://play.pokemonshowdown.com/sprites/ani-shiny/{}.gif".format(pokemonname.lower())
         else:
-            gif = r"http://play.pokemonshowdown.com/sprites/ani/{}.gif".format(pokemonname)
+            gif = r"http://play.pokemonshowdown.com/sprites/ani/{}.gif".format(pokemonname.lower())
         embed = discord.Embed(title="Congratulations {}!".format(self.player),
                               description=f"{self.player} has encountered a level {self.level} {self.pokemon}!",
                               color=0xFF5733)
