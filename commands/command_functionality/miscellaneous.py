@@ -6,7 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 import discord
 from asgiref.sync import sync_to_async
 
-from commands.interractions.miscellaneous.gmsearch import ImgWithText, GMSearch
 from commands.interractions.miscellaneous.help_cmd import HelpCmd
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.interractions.selectsview import SelectsView

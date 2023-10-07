@@ -32,11 +32,6 @@ class Miscellaneous(commands.Cog):
     #     sendable = Sendable(interaction)
     #     await miscellaneous.worldboss(sendable, playername)
 
-    # @miscellaneousgroup.command(name="gmsearch")
-    # async def gmsearch(self, interaction: Interaction, searchstring: str):
-    #     sendable = Sendable(interaction)
-    #     await miscellaneous.gmsearch(sendable, searchstring)
-
     # @miscellaneousgroup.command(name="help")
     # async def help(self, interaction: Interaction):
     #     sendable = Sendable(interaction)
