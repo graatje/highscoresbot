@@ -37,6 +37,10 @@ class Main(discord.Client):
     def add_event(self, event):
         self.eventscheduler.addEvent(event)
 
+    async def fetch_owner(self) -> discord.User:
+        app = await self.application_info()
+        return app.owner
+
 
 if __name__ == "__main__":
     Main(token=os.environ.get("token")).run()

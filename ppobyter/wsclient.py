@@ -8,6 +8,7 @@ from websocket import WebSocketApp
 import json
 
 from ppobyter.eventmaker import EventMaker
+from ppobyter.events.disconnect import Disconnect
 from ppobyter.main import Main
 import log
 load_dotenv()
@@ -52,6 +53,9 @@ class EventClientSocket(WebSocketApp):
             if event is not None:
                 logger.debug(f"following event made: {event}")
                 self.client.add_event(event)
+        elif msgtype == "disconnect":
+            logger.debug("client disconnected from gameserver.")
+            self.client.add_event(Disconnect())
 
     def send_json(self, message: dict):
         logger.debug(f"sent {message}")

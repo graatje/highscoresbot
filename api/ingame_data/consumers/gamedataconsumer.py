@@ -44,6 +44,9 @@ class GameDataConsumer(JsonWebsocketConsumer):
             self.login(data.get("username"), data.get("password"))
         elif actiontype == "logout":
             self.logout()
+        elif actiontype == "disconnect":
+            if self == self.master:
+                self.sendall({"type": "success", "command": "disconnect", "msg": "Master disconnected."})
         elif actiontype == "event":
             self.ingame_event(content)
         elif actiontype == "requestmaster":
