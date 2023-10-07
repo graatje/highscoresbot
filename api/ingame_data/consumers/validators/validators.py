@@ -459,7 +459,7 @@ class Validators:
                 "if": {
                     "properties": {
                         "eventtype": {
-                            "const": "swarm"
+                            "const": "worldbosstime"
                         },
                     },
                     "required": ["eventtype"],
