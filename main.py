@@ -4,7 +4,6 @@ import traceback
 from asgiref.sync import sync_to_async
 from dotenv import load_dotenv
 
-from api.eventconfigurations.models import Eventconfiguration
 
 
 def init_django():
@@ -46,7 +45,7 @@ from discord.ext.commands import Context, CommandNotFound, CommandInvokeError, N
 
 load_dotenv()
 init_django()
-
+from api.eventconfigurations.models import Eventconfiguration
 
 class Main(commands.Bot):
     def __init__(self):
