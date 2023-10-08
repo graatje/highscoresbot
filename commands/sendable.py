@@ -1,5 +1,6 @@
 from typing import Union
 
+import discord.errors
 from discord import Interaction, User
 from discord.abc import Messageable
 
@@ -26,8 +27,10 @@ class Sendable:
                 send = self.inputsrc.user.send
         else:
             send = self.inputsrc.__getattribute__("send")
-
-        await send(*args, **kwargs)
+        try:
+            await send(*args, **kwargs)
+        except discord.errors.NotFound:
+            await self.inputsrc.channel.send(*args, **kwargs)
 
     def __getattribute__(self, item, get_from_sendable=False):
         """
