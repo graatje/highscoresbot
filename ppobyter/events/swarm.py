@@ -32,21 +32,21 @@ class Swarm(Event):
         """
         Determines the recipients.
         """
-        self.__determinepmrecipients()
+       # self.__determinepmrecipients()
         self._determinechannelrecipients()
 
-    def __determinepmrecipients(self):
-        """
-        This determines the users that will receive a pm when this event shows up.
-        They can either get a message for the location, or one of the pokemon, or a combination of both.
-        """
-        #@todo
-        conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
-        query = "SELECT playerid FROM pmswarm WHERE (location=? AND (pokemon=? OR pokemon=?) AND comparator='&') " \
-                "OR ((location=? OR (pokemon=? OR pokemon=?)) AND comparator='|')"
-        cur = conn.cursor()
-        cur.execute(query, (self.location, self.pokemon1, self.pokemon2, self.location, self.pokemon1, self.pokemon2))
-        playerids = [row[0] for row in cur.fetchall()]
-        conn.close()
-        # remove duplicates
-        self._pmrecipients = list(set(playerids))
+    # def __determinepmrecipients(self):
+    #     """
+    #     This determines the users that will receive a pm when this event shows up.
+    #     They can either get a message for the location, or one of the pokemon, or a combination of both.
+    #     """
+    #     #@todo
+    #     conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
+    #     query = "SELECT playerid FROM pmswarm WHERE (location=? AND (pokemon=? OR pokemon=?) AND comparator='&') " \
+    #             "OR ((location=? OR (pokemon=? OR pokemon=?)) AND comparator='|')"
+    #     cur = conn.cursor()
+    #     cur.execute(query, (self.location, self.pokemon1, self.pokemon2, self.location, self.pokemon1, self.pokemon2))
+    #     playerids = [row[0] for row in cur.fetchall()]
+    #     conn.close()
+    #     # remove duplicates
+    #     self._pmrecipients = list(set(playerids))
