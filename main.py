@@ -3,7 +3,7 @@ import traceback
 
 from dotenv import load_dotenv
 
-from api.highscores.models import DefaultClanname
+
 
 
 def init_django():
@@ -46,6 +46,7 @@ from discord.ext.commands import Context, CommandNotFound, CommandInvokeError, N
 load_dotenv()
 init_django()
 from api.eventconfigurations.models import Eventconfiguration, Playerconfig, Clanconfig, EventconfigPermissions
+from api.highscores.models import DefaultClanname
 
 
 class Main(commands.Bot):
