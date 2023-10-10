@@ -58,6 +58,11 @@ class Event:
                     await chan.send(embed=msg, delete_after=configuration.time_in_channel * 60 if configuration.time_in_channel else configuration.time_in_channel)
                 else:
                     await chan.send(msg, delete_after=configuration.time_in_channel * 60 if configuration.time_in_channel else configuration.time_in_channel)
+                if configuration.failed_sends > 0:
+                    configuration.failed_sends = 0
+                    await configuration.asave()
+            except (discord.errors.Forbidden, discord.errors.NotFound):
+                await self.__handle_failed_send(configuration, client)
             except Exception as e:
                 print(e, configuration)
 
@@ -68,3 +73,25 @@ class Event:
             except Exception as e:
                 # probably 403 forbidden exceptions etc, those exceptions will be catched and ignored in the future.
                 print(e)
+
+    async def __handle_failed_send(self, configuration, client):
+        configuration.failed_sends += 1
+        if configuration.failed_sends <= 20:
+            return
+
+        configuration.channel = None
+        configuration.failed_sends = 0
+        await configuration.asave()
+        print(f"removed channel from eventconfiguration because of too many failed sends.")
+
+        guild = client.get_guild(configuration.guild)
+        if not guild:
+            return
+
+        message = f"""
+I lack permissions to send messages in <#{configuration.channel}> in {guild.name}!
+Therefore i removed that channel from the eventconfiguration.
+Please give me permissions to send messages in there and reconfigure the eventconfiguration for the {configuration.eventname} event.
+        """
+
+        await guild.owner.send(message)

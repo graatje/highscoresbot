@@ -13,6 +13,7 @@ class Eventconfiguration(BaseModel):
     channel = models.PositiveBigIntegerField(null=True)
     pingrole = models.PositiveBigIntegerField(null=True)
     time_in_channel = models.PositiveSmallIntegerField(null=True)
+    failed_sends = models.PositiveIntegerField(default=0)
 
     class Meta:
         constraints = [
