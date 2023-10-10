@@ -75,23 +75,26 @@ class Event:
                 print(e)
 
     async def __handle_failed_send(self, configuration, client):
-        configuration.failed_sends += 1
-        if configuration.failed_sends <= 20:
-            return
+        try:
+            configuration.failed_sends += 1
+            if configuration.failed_sends <= 20:
+                return
 
-        configuration.channel = None
-        configuration.failed_sends = 0
-        await configuration.asave()
-        print(f"removed channel from eventconfiguration because of too many failed sends.")
+            configuration.channel = None
+            configuration.failed_sends = 0
+            await configuration.asave()
+            print(f"removed channel from eventconfiguration because of too many failed sends.")
 
-        guild = client.get_guild(configuration.guild)
-        if not guild:
-            return
+            guild = client.get_guild(configuration.guild)
+            if not guild:
+                return
 
-        message = f"""
-I lack permissions to send messages in <#{configuration.channel}> in {guild.name}!
-Therefore i removed that channel from the eventconfiguration.
-Please give me permissions to send messages in there and reconfigure the eventconfiguration for the {configuration.eventname} event.
-        """
+            message = f"""
+    I lack permissions to send messages in <#{configuration.channel}> in {guild.name}!
+    Therefore i removed that channel from the eventconfiguration.
+    Please give me permissions to send messages in there and reconfigure the eventconfiguration for the {configuration.eventname} event.
+            """
 
-        await guild.owner.send(message)
+            await guild.owner.send(message)
+        except Exception as e:
+            print("error during handling failed send:", e)
