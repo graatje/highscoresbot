@@ -1,7 +1,9 @@
 from django.db import models
 
+from api.basemodel import BaseModel
 
-class Activity(models.Model):
+
+class Activity(BaseModel):
     player = models.TextField(max_length=50, primary_key=True)
     lastonline = models.DateTimeField()
 

@@ -1,10 +1,12 @@
+from asgiref.sync import sync_to_async
 from django.db import models
 from django.db.models import UniqueConstraint
 
+from api.basemodel import BaseModel
 from api.ingame_data.models import Eventname
 
 
-class Eventconfiguration(models.Model):
+class Eventconfiguration(BaseModel):
 
     eventname = models.ForeignKey(Eventname, on_delete=models.PROTECT)
     guild = models.PositiveBigIntegerField()

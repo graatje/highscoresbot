@@ -1,7 +1,9 @@
 from django.db import models
 
+from api.basemodel import BaseModel
 
-class Worldboss(models.Model):
+
+class Worldboss(BaseModel):
     pokemon = models.TextField()
     location = models.TextField()
     date = models.DateField(auto_now=True)

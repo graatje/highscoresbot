@@ -2,8 +2,10 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
+from api.basemodel import BaseModel
 
-class Clanconfig(models.Model):
+
+class Clanconfig(BaseModel):
     guild = models.PositiveBigIntegerField()
     clan = models.TextField(max_length=200)
 

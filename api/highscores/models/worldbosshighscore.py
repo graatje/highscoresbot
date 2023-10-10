@@ -1,9 +1,10 @@
 from django.db import models
 
+from api.basemodel import BaseModel
 from api.ingame_data.models import Worldboss
 
 
-class WorldbossHighscore(models.Model):
+class WorldbossHighscore(BaseModel):
     worldboss = models.ForeignKey(Worldboss, on_delete=models.PROTECT)
     player = models.TextField()
     damage = models.PositiveIntegerField()

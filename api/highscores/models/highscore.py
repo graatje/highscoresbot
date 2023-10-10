@@ -1,10 +1,11 @@
 from django.db import models
 from django.db.models import UniqueConstraint
 
+from api.basemodel import BaseModel
 from api.highscores.models.highscoreconfig import HighscoreConfig
 
 
-class Highscore(models.Model):
+class Highscore(BaseModel):
     rank = models.IntegerField()
     highscore = models.ForeignKey(HighscoreConfig, on_delete=models.PROTECT)
     data = models.JSONField()

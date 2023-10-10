@@ -1,7 +1,9 @@
 from django.db import models
 
+from api.basemodel import BaseModel
 
-class HighscoreConfig(models.Model):
+
+class HighscoreConfig(BaseModel):
     highscorename = models.TextField(primary_key=True)
     url = models.URLField()
     pagesamount = models.PositiveSmallIntegerField()

@@ -1,7 +1,9 @@
 from django.db import models
 
+from api.basemodel import BaseModel
 
-class Eventname(models.Model):
+
+class Eventname(BaseModel):
     name = models.TextField(max_length=50, primary_key=True)
     fields = models.JSONField(default=dict)
 

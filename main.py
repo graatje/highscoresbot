@@ -1,9 +1,9 @@
 import os
 import traceback
 
-from asgiref.sync import sync_to_async
 from dotenv import load_dotenv
 
+from api.highscores.models import DefaultClanname
 
 
 def init_django():
@@ -45,7 +45,8 @@ from discord.ext.commands import Context, CommandNotFound, CommandInvokeError, N
 
 load_dotenv()
 init_django()
-from api.eventconfigurations.models import Eventconfiguration
+from api.eventconfigurations.models import Eventconfiguration, Playerconfig, Clanconfig, EventconfigPermissions
+
 
 class Main(commands.Bot):
     def __init__(self):
@@ -139,11 +140,22 @@ class Main(commands.Bot):
             await chan.send(temp + "```")
 
     async def on_guild_remove(self, guild):
-        filtered = await sync_to_async(Eventconfiguration.objects.filter)(guild=guild.id)
-        await sync_to_async(filtered.delete)()
+        async for eventconfig in Eventconfiguration.objects.filter(guild=guild.id):
+            await eventconfig.adelete()
+
+        async for playerconfig in Playerconfig.objects.filter(guild=guild.id):
+            await playerconfig.adelete()
+
+        async for clanconfig in Clanconfig.objects.filter(guild=guild.id):
+            await clanconfig.adelete()
+
+        async for eventconfigpermission in EventconfigPermissions.objects.filter(guild=guild.id):
+            await eventconfigpermission.adelete()
+
+        async for defaultclanname in DefaultClanname.objects.filter(guild=guild.id):
+            await defaultclanname.adelete()
 
 
 if __name__ == "__main__":
     client = Main()
     client.run(os.environ.get("discordtoken"))
-
