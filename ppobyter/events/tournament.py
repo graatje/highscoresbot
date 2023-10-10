@@ -35,21 +35,21 @@ class Tournament(Event):
         :return:
         """
         self._determinechannelrecipients()
-        self.__determinepmrecipients()
+      #  self.__determinepmrecipients()
 
-    def __determinepmrecipients(self):
-        """
-        This determines the pmrecipients based on prize, tournament type or a combination of both.
-        """
-        playerids = []
-        query = "SELECT playerid FROM pmtournament WHERE (tournament=? OR prize=?) AND comparator='|' " \
-                "OR (tournament = ? AND prize=? AND comparator='&')"
-        conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
-        cur = conn.cursor()
-        for prize in self.prizes:
-            pattern = r"(.* ?)(?= \(([0-9]+)\))"
-            if match := re.search(pattern, prize):
-                prize = match.group()
-            cur.execute(query, (self.tournament, prize, self.tournament, prize))
-            playerids += [row[0] for row in cur.fetchall()]
-        self._pmrecipients = list(set(playerids))
+    # def __determinepmrecipients(self):
+    #     """
+    #     This determines the pmrecipients based on prize, tournament type or a combination of both.
+    #     """
+    #     playerids = []
+    #     query = "SELECT playerid FROM pmtournament WHERE (tournament=? OR prize=?) AND comparator='|' " \
+    #             "OR (tournament = ? AND prize=? AND comparator='&')"
+    #     conn = sqlite3.connect(self.pathManager.getpath("eventconfigurations.db"))
+    #     cur = conn.cursor()
+    #     for prize in self.prizes:
+    #         pattern = r"(.* ?)(?= \(([0-9]+)\))"
+    #         if match := re.search(pattern, prize):
+    #             prize = match.group()
+    #         cur.execute(query, (self.tournament, prize, self.tournament, prize))
+    #         playerids += [row[0] for row in cur.fetchall()]
+    #     self._pmrecipients = list(set(playerids))
