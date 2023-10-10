@@ -78,6 +78,7 @@ class Event:
         try:
             configuration.failed_sends += 1
             if configuration.failed_sends <= 20:
+                await configuration.asave()
                 return
 
             configuration.channel = None
