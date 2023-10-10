@@ -80,6 +80,16 @@ class Main(commands.Bot):
         for a in await self.tree.fetch_commands():
             print(a)
 
+        # Remove eventconfigurations of guilds that the bot is no longer in.
+        guildids = [guild.id for guild in self.guilds]
+        amountdeleted = 0
+        async for configuration in Eventconfiguration.objects.all():
+            if configuration.guild not in guildids:
+                await self._remove_guild_configurations(configuration.guild)
+                amountdeleted += 1
+
+        print(f"deleted {amountdeleted} eventconfigurations.")
+
     async def on_command_error(self, ctx: Context, error: Exception):
         """
         handles errors, and sends those to the error channel if the exception is not handled in another way.
@@ -141,19 +151,22 @@ class Main(commands.Bot):
             await chan.send(temp + "```")
 
     async def on_guild_remove(self, guild):
-        async for eventconfig in Eventconfiguration.objects.filter(guild=guild.id):
+        await self._remove_guild_configurations(guild.id)
+
+    async def _remove_guild_configurations(self, guildid: int):
+        async for eventconfig in Eventconfiguration.objects.filter(guild=guildid):
             await eventconfig.adelete()
 
-        async for playerconfig in Playerconfig.objects.filter(guild=guild.id):
+        async for playerconfig in Playerconfig.objects.filter(guild=guildid):
             await playerconfig.adelete()
 
-        async for clanconfig in Clanconfig.objects.filter(guild=guild.id):
+        async for clanconfig in Clanconfig.objects.filter(guild=guildid):
             await clanconfig.adelete()
 
-        async for eventconfigpermission in EventconfigPermissions.objects.filter(guild=guild.id):
+        async for eventconfigpermission in EventconfigPermissions.objects.filter(guild=guildid):
             await eventconfigpermission.adelete()
 
-        async for defaultclanname in DefaultClanname.objects.filter(guild=guild.id):
+        async for defaultclanname in DefaultClanname.objects.filter(guild=guildid):
             await defaultclanname.adelete()
 
 
