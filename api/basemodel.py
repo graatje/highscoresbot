@@ -6,5 +6,8 @@ class BaseModel(models.Model):
     async def adelete(self):
         await sync_to_async(self.delete)()
 
+    async def asave(self):
+        await sync_to_async(self.save)()
+
     class Meta:
         abstract = True
