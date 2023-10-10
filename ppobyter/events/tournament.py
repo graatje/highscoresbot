@@ -19,7 +19,6 @@ class Tournament(Event):
         self.tournament = tournament.lower()
         self.EVENTNAME = "tournament"
         super(Tournament, self).__init__()
-        self.insertprizes()
 
     def makeMessage(self) -> str:
         """
