@@ -322,7 +322,7 @@ async def playerconfig(sendable: Sendable, actiontype: str, player: str=None):
         except Playerconfig.DoesNotExist:
             await sendable.send(f"{player} was not configured so could not be deleted.")
     elif actiontype == "show":
-        await sendable.send("The following players have been registered for playerconfig:\n```" +
+        await sendable.send("The following players have been registered for playerconfig:\n```\n" +
                             "\n".join([config.player
                                        async for config in Playerconfig.objects.filter(guild=sendable.guild.id)]) +
                             "```")
