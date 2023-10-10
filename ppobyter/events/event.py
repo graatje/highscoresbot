@@ -86,9 +86,15 @@ class Event:
             await configuration.asave()
             print(f"removed channel from eventconfiguration because of too many failed sends.")
 
-            guild = client.get_guild(configuration.guild)
+            guild = await client.fetch_guild(configuration.guild)
+
             if not guild:
                 return
+
+            owner = await client.fetch_user(guild.owner_id)
+            if not owner:
+                return
+
 
             message = f"""
     I lack permissions to send messages in <#{configuration.channel}> in {guild.name}!
@@ -96,6 +102,6 @@ class Event:
     Please give me permissions to send messages in there and reconfigure the eventconfiguration for the {configuration.eventname} event.
             """
 
-            await guild.owner.send(message)
+            await owner.send(message)
         except Exception as e:
             print("error during handling failed send:", e)
