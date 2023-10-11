@@ -75,31 +75,33 @@ class Event:
                 print(e)
 
     async def __handle_failed_send(self, configuration, client):
+        try:
+            configuration.failed_sends += 1
+            if configuration.failed_sends <= 20:
+                await configuration.asave()
+                return
 
-        configuration.failed_sends += 1
-        if configuration.failed_sends <= 20:
+            configuration.channel = None
+            configuration.failed_sends = 0
             await configuration.asave()
-            return
+            print(f"removed channel from eventconfiguration because of too many failed sends.")
 
-        configuration.channel = None
-        configuration.failed_sends = 0
-        await configuration.asave()
-        print(f"removed channel from eventconfiguration because of too many failed sends.")
+            guild = await client.fetch_guild(configuration.guild)
+            print("guild", guild)
+            if not guild:
+                return
 
-        guild = await client.fetch_guild(configuration.guild)
-        print("guild", guild)
-        if not guild:
-            return
+            owner = await client.fetch_user(guild.owner_id)
+            print("owner", owner)
+            if not owner:
+                return
 
-        owner = await client.fetch_user(guild.owner_id)
-        print("owner", owner)
-        if not owner:
-            return
+            message = f"""
+    I lack permissions to send messages in <#{configuration.channel}> in {guild.name}!
+    Therefore i removed that channel from the eventconfiguration.
+    Please give me permissions to send messages in there and reconfigure the eventconfiguration for the {configuration.eventname} event.
+            """
 
-        message = f"""
-I lack permissions to send messages in <#{configuration.channel}> in {guild.name}!
-Therefore i removed that channel from the eventconfiguration.
-Please give me permissions to send messages in there and reconfigure the eventconfiguration for the {configuration.eventname} event.
-        """
-
-        await owner.send(message)
+            await owner.send(message)
+        except Exception as e:
+            print(e)
