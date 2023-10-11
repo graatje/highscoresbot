@@ -87,11 +87,12 @@ class Event:
         print(f"removed channel from eventconfiguration because of too many failed sends.")
 
         guild = await client.fetch_guild(configuration.guild)
-
+        print("guild", guild)
         if not guild:
             return
 
         owner = await client.fetch_user(guild.owner_id)
+        print("owner", owner)
         if not owner:
             return
 
