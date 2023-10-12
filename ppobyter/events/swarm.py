@@ -1,7 +1,10 @@
-from api.eventconfigurations.models import PmConfig
+from typing import Union
+
+import discord
+
+import config
 from .event import Event
 import json
-import sqlite3
 
 
 class Swarm(Event):
@@ -21,12 +24,18 @@ class Swarm(Event):
         self.EVENTNAME = "swarm"
         super(Swarm, self).__init__()
 
-    def makeMessage(self) -> str:
+    def makeMessage(self) -> list:
         """
         Makes the message that gets sent to the recipients.
         :return: The message.
         """
-        return f"A group of wild {self.pokemon1} and {self.pokemon2} have been spotted at {self.location}!"
+        messages = [f"A group of wild {self.pokemon1} and {self.pokemon2} have been spotted at {self.location}!"]
+
+        location_embed = self._make_location_embed(self.location)
+        if location_embed:
+            messages.append(location_embed)
+
+        return messages
 
     def determineRecipients(self, **kwargs):
         """
@@ -50,3 +59,35 @@ class Swarm(Event):
     #     conn.close()
     #     # remove duplicates
     #     self._pmrecipients = list(set(playerids))
+
+    def _make_location_embed(self, location_name) -> Union[discord.Embed, None]:
+        with open(config.PPO_LOCATIONS_PATH, "r", encoding="utf-8") as file:
+            locations_data = json.load(file)
+
+        location = next(
+            (location for location in locations_data["allLocationsData"] if location['name'].lower() == location_name.lower()), None)
+
+        if not location:
+            return None
+
+        embed = discord.Embed(
+            title=f'{location["name"]}',
+            color=808080)
+
+        imgurl = f"https://www.ppobuddy.com/locations/{location['region'].lower()}/{location['imageName'] if 'imageName' in location else location['_id']}.png"
+        embed.set_image(url=imgurl)
+
+        if "encounters" not in location:
+            return None
+
+        for category, pokemon_encounters in location["encounters"].items():  # example: land, list of pokemon
+            embed.add_field(name=category.capitalize(), value=" ", inline=False)
+
+            encounter_text_list = [
+                f"{encounter_info['pokemonId'].capitalize()} <{config.RARITY_MAPPING.get(encounter_info['rarity'], 'Unknown Rarity')}>"
+                for encounter_info in pokemon_encounters]
+
+            locations_string = "\n".join(encounter_text_list)
+
+            embed.add_field(name=" ", value=locations_string, inline=False)
+        return embed

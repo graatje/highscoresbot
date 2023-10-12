@@ -49,30 +49,48 @@ class Event:
         """
         for configuration in self._recipients:
             try:
-                chan = await client.fetch_channel(configuration.channel)
-                msg = self.makeMessage()
-                if configuration.pingrole is not None and type(msg) != discord.Embed:
-                    msg += f"<@&{configuration.pingrole}>"
-
-                if type(msg) == discord.embeds.Embed:
-                    await chan.send(embed=msg, delete_after=configuration.time_in_channel * 60 if configuration.time_in_channel else configuration.time_in_channel)
-                else:
-                    await chan.send(msg, delete_after=configuration.time_in_channel * 60 if configuration.time_in_channel else configuration.time_in_channel)
-                if configuration.failed_sends > 0:
-                    configuration.failed_sends = 0
-                    await configuration.asave()
+                await self.__handle_send(configuration, client)
             except (discord.errors.Forbidden, discord.errors.NotFound):
                 await self.__handle_failed_send(configuration, client)
             except Exception as e:
                 print(e, configuration)
 
-        for pmconfig in self._pmrecipients:
-            try:
-                user = await client.fetch_user(pmconfig.user)
-                await user.send(self.makeMessage())
-            except Exception as e:
-                # probably 403 forbidden exceptions etc, those exceptions will be catched and ignored in the future.
-                print(e)
+        # for pmconfig in self._pmrecipients:
+        #     try:
+        #         user = await client.fetch_user(pmconfig.user)
+        #         await user.send(self.makeMessage())
+        #     except Exception as e:
+        #         # probably 403 forbidden exceptions etc, those exceptions will be catched and ignored in the future.
+        #         print(e)
+
+    async def __handle_send(self, configuration, client: discord.Client):
+        chan = await client.fetch_channel(configuration.channel)
+        msg = self.makeMessage()
+
+        if type(msg) != list:
+            msg = [msg]
+
+        pingSent = False
+        for msg_part in msg:
+            pingrole = configuration.pingrole if configuration.pingrole and not pingSent and type(msg_part) == str else None
+            await self.__send_message(msg_part, configuration, chan, pingrole)
+
+            pingSent = bool(pingrole)
+
+        if configuration.failed_sends > 0:
+            configuration.failed_sends = 0
+            await configuration.asave()
+
+    async def __send_message(self, msg, configuration, channel, pingrole=None):
+        arguments = {
+            "delete_after": configuration.time_in_channel * 60 if configuration.time_in_channel else None
+        }
+        if type(msg) == discord.embeds.Embed:
+            arguments["embed"] = msg
+        else:
+            msg += f"<@&{pingrole}>" if pingrole else ""
+            arguments["content"] = msg
+        await channel.send(**arguments)
 
     async def __handle_failed_send(self, configuration, client):
         try:
