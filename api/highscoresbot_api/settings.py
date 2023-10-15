@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'api.highscoresbot_api',
     # "config",
     # "rest_framework",
-    'django.contrib.admin',
+   # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -111,6 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "highscoresbot_api.User"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
