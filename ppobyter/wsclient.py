@@ -47,8 +47,9 @@ class EventClientSocket(WebSocketApp):
 
         if msgtype == "event":
             logger.debug("message type is ingame data")
+            data = message.get("data", {})
             event = EventMaker.makeEvent(eventname=message.get("eventtype", None),
-                                         **message.get("data", {}))
+                                         **data.get("data", {}))
 
             if event is not None:
                 logger.debug(f"following event made: {event}")

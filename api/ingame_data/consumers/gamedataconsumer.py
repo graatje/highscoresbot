@@ -35,9 +35,16 @@ class GameDataConsumer(JsonWebsocketConsumer):
         try:
             Validators.validateJson(content.get('command', None), content)
         except ValidationError as e:
-            self.send_json({'type': 'error', 'command': content.get('command', None), 'msg': e.message})
+            self.send_json(
+                {
+                    'command': content.get('command', None),
+                    'success': False,
+                    'message': e.message
+                }
+            )
             return
         actiontype = content.get('command')
+        print(content)
         data = content.get('data', {})
 
         if actiontype == "login":
@@ -46,7 +53,13 @@ class GameDataConsumer(JsonWebsocketConsumer):
             self.logout()
         elif actiontype == "disconnect":
             if self == self.master:
-                self.sendall({"type": "success", "command": "disconnect", "msg": "Master disconnected."})
+                self.sendall(
+                    {
+                        "command": "disconnect",
+                        "success": True,
+                        "message": "Master disconnected."
+                     }
+                )
         elif actiontype == "event":
             self.ingame_event(content)
         elif actiontype == "requestmaster":
@@ -62,34 +75,72 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 self.permissionlevel = PermissionLevel.ADMINISTRATOR
             else:
                 self.permissionlevel = PermissionLevel.LOGGED_IN
-            self.send_json({"type": "success", "command": "login", "msg": "success",
-                            "permissionlevel": self.permissionlevel.value})
+            self.send_json(
+                {
+                    "command": "login",
+                    "success": True,
+                    "message": "login successfull",
+                    "data": {
+                        "permissionlevel": self.permissionlevel.value
+                    }
+                }
+            )
         else:
-            self.send_json({"type": "error", "command": "login", "msg": "Invalid credentials"})
+            self.send_json(
+                {
+                    "command": "login",
+                    "success": False,
+                    "message": "Invalid credentials"
+                }
+            )
 
     def logout(self):
         logger.info(f"{self.user} logged out")
         self.user = AnonymousUser()
         self.permissionlevel = PermissionLevel.UNAUTHORIZED
-        self.send_json({"type": "success", "command": "logout", "msg": "Successfully logged out"})
+        self.send_json(
+            {
+                "command": "logout",
+                "success": True,
+                "message": "Successfully logged out"
+            }
+        )
 
     def requestMaster(self):
         logger.info(f"{self.user} requested master")
         if self.permissionlevel != PermissionLevel.ADMINISTRATOR:
-            self.send_json({"type": "error", "command": "requestmaster", "msg": "Insufficient permissions for this command! "
-                                                                                f"Permissionlevel: {self.permissionlevel.value}"})
+            self.send_json(
+                {
+                    "command": "requestmaster",
+                    "success": False,
+                    "message": "Insufficient permissions for this command! " + f"Permissionlevel: {self.permissionlevel.value}"
+                }
+            )
             return
         self.master = self
-        self.send_json({"type": "success", "command": "requestmaster", "msg": "Client set as master."})
+        self.send_json(
+            {
+                "command": "requestmaster",
+                "success": True,
+                "message": "Client set as master."
+            }
+        )
 
     def ingame_event(self, content: dict):
         if self != self.master:
-            self.send_json({"type": "error", "command": "event", "msg": "Only masters can submit events."})
+            self.send_json(
+                {
+                    "command": "event",
+                    "success": False,
+                    "message": "Only masters can submit events."
+                }
+            )
             return
-        eventtype = content.get('eventtype')
+        data = content.get('data', {})
+        eventtype = data.get('eventtype')
 
         # Data is already validated before this method is called so type is success.
-        content["type"] = "success"
+        content["success"] = True
 
         self.sendall(content)
 
@@ -98,16 +149,16 @@ class GameDataConsumer(JsonWebsocketConsumer):
         if model is None:
             return
 
-        for key, val in content['data'].items():
+        for key, val in content['data']['data'].items():
             if type(val) != str:
                 continue
             try:
                 if re.match(r"\d{4}-\d{1,2}-\d{1,2}", val):
-                    content['data'][key] = datetime.datetime.strptime(val, "%Y-%m-%d")
+                    content['data']['data'][key] = datetime.datetime.strptime(val, "%Y-%m-%d")
             except ValueError as e:
                 print(e)
 
-        obj = model.objects.create(**content['data'])
+        obj = model.objects.create(**data['data'])
 
         obj.save()
 
@@ -117,4 +168,4 @@ class GameDataConsumer(JsonWebsocketConsumer):
             try:
                 client.send_json(content=content, close=close)
             except Exception as e:
-                logger.exception(f"exception occured when sending to a client: {e}")
+                logger.exception(f"exception occurred when sending to a client: {e}")

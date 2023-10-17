@@ -20,12 +20,15 @@ class Validators:
     EVENT_SCHEMA = {
         "type": "object",
         "properties": {
-            "eventtype": {
-                "enum": ['altar', 'altaramounts', 'chest', 'cwend', 'elite4', 'encounter', 'goldrush', 'honey', 'itembomb', 'roll', 'swarm', 'tournament', 'worldboss', 'worldbosstime']
-            },
-        },
-        "required": ["eventtype"],
-        "allOf": [
+            "data": {
+                "type": "object",
+                "properties": {
+                    "eventtype": {
+                        "enum": ['altar', 'altaramounts', 'chest', 'cwend', 'elite4', 'encounter', 'goldrush', 'honey', 'itembomb', 'roll', 'swarm', 'tournament', 'worldboss', 'worldbosstime']
+                    },
+                },
+                "required": ["eventtype"],
+                "allOf": [
             # altar
             {
                 "if": {
@@ -483,6 +486,8 @@ class Validators:
                 }
             },
         ],
+            }
+        }
     }
 
     @classmethod
@@ -501,11 +506,14 @@ class Validators:
 if __name__ == "__main__":
     Validators.validateJson('event', {
     "type": "event",
-    "eventtype": "tournament",
+
     "data": {
-        "tournament": "Monotype",
-        "minstillstart": "30",
-        "prizes": "PvP Token (250), Credit (400), 30 Day GM Ticket (1)"
+        "eventtype": "tournament",
+        "data": {
+            "tournament": "Monotype",
+            "minstillstart": 30,
+            "prizes": "PvP Token (250), Credit (400), 30 Day GM Ticket (1)"
+        }
     }
 })
     #Validators.validateJson('event', {"type": "event", "eventtype": "goldrush", "data": {"location": "mt moon"}})
