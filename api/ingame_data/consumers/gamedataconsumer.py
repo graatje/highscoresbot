@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import datetime
 import re
-from typing import List
+from typing import List, Union
 
 from django.contrib.auth import authenticate
 from jsonschema.exceptions import ValidationError
 
 import log
 from channels.generic.websocket import JsonWebsocketConsumer
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
 from api.enums import PermissionLevel
+from api.highscoresbot_api.models import User
 from api.ingame_data.consumers.validators.validators import Validators
 from api.ingame_data.objectmapping import objectmapping
 logger = log.Logger()
@@ -22,7 +23,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super(GameDataConsumer, self).__init__(args=args, kwargs=kwargs)
-        self.user = AnonymousUser()
+        self.user: Union[User, AnonymousUser] = AnonymousUser()
         self.permissionlevel = PermissionLevel.UNAUTHORIZED
 
     def connect(self):
@@ -64,6 +65,21 @@ class GameDataConsumer(JsonWebsocketConsumer):
             self.ingame_event(content)
         elif actiontype == "requestmaster":
             self.requestMaster()
+        elif actiontype == "registercommand":
+            if self.permissionlevel == self.permissionlevel.UNAUTHORIZED:
+                self.send_json(
+                    {
+                        "command": "registercommand",
+                        "success": False,
+                        "message": "Insufficient permissions for this command!"
+                    }
+                )
+                return
+            content["data"]["prefix"] = self.user.prefix
+            self.master.send_json(content)
+
+            content["success"] = True
+            self.send_json(content)
 
     def login(self, username, password):
         user = authenticate(username=username, password=password)

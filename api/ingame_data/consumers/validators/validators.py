@@ -490,6 +490,63 @@ class Validators:
         }
     }
 
+    REGISTERCOMMAND_SCHEMA = {
+       "type": "object",
+       "properties": {
+          "data": {
+             "type": "object",
+             "properties": {
+                "name": {
+                   "type": "string"
+                },
+                "description": {
+                   "type": "string"
+                },
+                "commandarguments": {
+                   "type": "array",
+                   "items": {
+                      "type": "object",
+                      "properties": {
+                         "name": {
+                            "type": "string"
+                         },
+                         "description": {
+                            "type": "string"
+                         },
+                         "required": {
+                            "type": "boolean"
+                         },
+                         "type": {
+                            "enum": [
+                               "string",
+                               "number"
+                            ]
+                         }
+                      },
+                      "required": [
+                          "name",
+                          "description",
+                      ],
+                   }
+                },
+                "aliases": {
+                   "type": "array",
+                   "items": {
+                      "type": "string"
+                   }
+                },
+             },
+             "required": [
+                "name",
+                "description",
+             ]
+          }
+       },
+       "required": [
+           "data",
+       ],
+    }
+
     @classmethod
     def validateJson(cls, actiontype, jsonData):
         if actiontype is None:
@@ -500,20 +557,26 @@ class Validators:
             jsonschema.validate(instance=jsonData, schema=cls.LOGIN_SCHEMA)
         elif actiontype == "event":
             jsonschema.validate(instance=jsonData, schema=cls.EVENT_SCHEMA)
+        elif actiontype == "registercommand":
+            jsonschema.validate(instance=jsonData, schema=cls.REGISTERCOMMAND_SCHEMA)
         return True
 
 
 if __name__ == "__main__":
-    Validators.validateJson('event', {
-    "type": "event",
+    Validators.validateJson('registercommand', {
+    "type": "registercommand",
 
     "data": {
-        "eventtype": "tournament",
-        "data": {
-            "tournament": "Monotype",
-            "minstillstart": 30,
-            "prizes": "PvP Token (250), Credit (400), 30 Day GM Ticket (1)"
-        }
+        "name": "testcommand",
+        "description": "testcommand description",
+        "commandarguments": [
+            {
+                "name": "testargument",
+                "description": "testargument description",
+                "required": True,
+                "type": "string"
+            },
+        ],
     }
 })
     #Validators.validateJson('event', {"type": "event", "eventtype": "goldrush", "data": {"location": "mt moon"}})
