@@ -90,7 +90,7 @@ class EventClientSocket(WebSocketApp):
 
             "data": {
                 "name": "testcommand",
-                "description": "testcommand description",
+                "description": "testcommand description adjusted",
                 "commandarguments": [
                     {
                         "name": "testargument",
