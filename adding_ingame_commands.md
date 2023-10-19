@@ -56,6 +56,7 @@ _haven't got an account? Message kevin123456 on discord_
     }
 }
 ```
+example:
 ```json
 {
     "command": "command",
@@ -72,7 +73,8 @@ _haven't got an account? Message kevin123456 on discord_
 }
 ```
 Worth mentioning here is that if the user provided more arguments than there are present, then the remaining part will be added to the string of the last command. So if the user provided 3 arguments, but there are only 2, then the last argument will be added to the string of the last argument with a space in between.
-5. You can now send a response to the server with the received uid from the server:
+
+6. You can now send a response to the server with the received uid from the server:
 ```json
 {
     "command": "commandresponse",
