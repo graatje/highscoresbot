@@ -68,7 +68,15 @@ class EventClientSocket(WebSocketApp):
             logger.debug("client disconnected from gameserver.")
             self.client.add_event(Disconnect())
         elif command == "command":
-            pass
+            resp = {
+                "command": "commandresponse",
+                "data": {
+                    "uid": message.get("data", {}).get("uid", None),
+                    "messages": ["command working."]
+                },
+            }
+            self.send_json(resp)
+            print("command working.")
         else:
             logger.warning("unknown command: " + str(message))
 
