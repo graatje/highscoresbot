@@ -22,6 +22,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
     configs = {
         "master": None
     }
+    commandResponses = {}
 
     def __init__(self, *args, **kwargs):
         super(GameDataConsumer, self).__init__(args=args, kwargs=kwargs)
@@ -84,6 +85,15 @@ class GameDataConsumer(JsonWebsocketConsumer):
             content["success"] = True
             self.send_json(content)
         elif actiontype == "command":
+            if self != self.configs["master"]:
+                self.send_json(
+                    {
+                        "command": "commandresponse",
+                        "success": False,
+                        "message": "Only master can submit commands."
+                    }
+                )
+                return
             # Fetch the user
             user = User.objects.get(id=data.get("user_id"))
             if not user:
@@ -93,9 +103,23 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 return
             client = clients[0]
 
+            self.commandResponses[data.get("uid")] = client
+
             # send the command to the client
             client.send_json(content)
         elif actiontype == "commandresponse":
+            if self != self.commandResponses.get(data.get("uid"), None):
+                self.send_json(
+                    {
+                        "command": "commandresponse",
+                        "success": False,
+                        "message": "This command response is not for you or does not exist.",
+                        "data": {
+                            "uid": data.get("uid")
+                        },
+                    }
+                )
+                return
             self.configs["master"].send_json(content)
 
     def login(self, username, password):

@@ -71,7 +71,7 @@ class EventClientSocket(WebSocketApp):
             resp = {
                 "command": "commandresponse",
                 "data": {
-                    "uid": message.get("data", {}).get("uid", None),
+                    "uid": message["data"]["uid"],
                     "messages": ["command working."]
                 },
             }
