@@ -78,6 +78,15 @@ class GameDataConsumer(JsonWebsocketConsumer):
                     }
                 )
                 return
+            elif self.user.prefix is None:
+                self.send_json(
+                    {
+                        "command": "registercommand",
+                        "success": False,
+                        "message": "You have no prefix set! Please contact kevin123456 on discord."
+                    }
+                )
+                return
             content["data"]["prefix"] = self.user.prefix
             content["data"]["user_id"] = self.user.id
             self.configs["master"].send_json(content)
