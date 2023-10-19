@@ -547,6 +547,43 @@ class Validators:
        ],
     }
 
+    COMMAND_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "data": {
+                "type": "object",
+                "properties": {
+                    "uid": {
+                        "type": "string"
+                    },
+                    "command": {
+                        "type": "string"
+                    },
+                    "arguments": {
+                        "type": "object"
+                    },
+                    "user_id": {
+                        "type": "number"
+                    },
+                    "expires_at": {
+                        "type": "number"
+                    },
+                    "messages_remaining": {
+                        "type": "number"
+                    },
+                },
+                "required": [
+                    "uid",
+                    "command",
+                    "user_id"
+                ]
+            }
+        },
+        "required": [
+            "data"
+        ]
+    }
+
     @classmethod
     def validateJson(cls, actiontype, jsonData):
         if actiontype is None:
@@ -559,24 +596,40 @@ class Validators:
             jsonschema.validate(instance=jsonData, schema=cls.EVENT_SCHEMA)
         elif actiontype == "registercommand":
             jsonschema.validate(instance=jsonData, schema=cls.REGISTERCOMMAND_SCHEMA)
+        elif actiontype == "command":
+            jsonschema.validate(instance=jsonData, schema=cls.COMMAND_SCHEMA)
         return True
 
 
 if __name__ == "__main__":
-    Validators.validateJson('registercommand', {
-    "type": "registercommand",
-
-    "data": {
-        "name": "testcommand",
-        "description": "testcommand description",
-        "commandarguments": [
-            {
-                "name": "testargument",
-                "description": "testargument description",
-                "required": True,
-                "type": "string"
-            },
-        ],
-    }
-})
+    Validators.validateJson("command",
+                            {
+                                "command": "command",
+                                "data": {
+                                    "uid": "lnwyd15vzdqiviw4so",
+                                    "command": "testcommand",
+                                    "args": {
+                                        "testargument": "dd"
+                                    },
+                                    "user_id": 1,
+                                    "expires_at": 1697706192355
+                                }
+                            }
+                            )
+#     Validators.validateJson('registercommand', {
+#     "command": "registercommand",
+#
+#     "data": {
+#         "name": "testcommand",
+#         "description": "testcommand description",
+#         "commandarguments": [
+#             {
+#                 "name": "testargument",
+#                 "description": "testargument description",
+#                 "required": True,
+#                 "type": "string"
+#             },
+#         ],
+#     }
+# })
     #Validators.validateJson('event', {"type": "event", "eventtype": "goldrush", "data": {"location": "mt moon"}})

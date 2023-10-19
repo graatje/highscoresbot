@@ -81,6 +81,18 @@ class GameDataConsumer(JsonWebsocketConsumer):
 
             content["success"] = True
             self.send_json(content)
+        elif actiontype == "command":
+            # Fetch the user
+            user = User.objects.get(id=data.get("user_id"))
+            if not user:
+                return
+
+            if not (clients := [client for client in self.clients if client.user == user]):
+                return
+            client = clients[0]
+
+            # send the command to the client
+            client.send_json(content)
 
     def login(self, username, password):
         user = authenticate(username=username, password=password)
