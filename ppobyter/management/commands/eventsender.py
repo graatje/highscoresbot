@@ -11,5 +11,8 @@ class Command(BaseCommand, ABC):
     def handle(self, *args, **options):
         print("hello world.")
         a = EventClientSocket(url="ws://127.0.0.1:8000/api/ingame_data/ws/gamedatareceiver/",
-                              token=os.environ.get("discordtoken"))
+                              token=os.environ.get("discordtoken"),
+                              username=os.environ.get("botusername"),
+                              password=os.environ.get("botpassword")
+                              )
         a.run_forever()

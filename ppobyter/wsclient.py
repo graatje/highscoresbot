@@ -19,7 +19,9 @@ class EventClientSocket(WebSocketApp):
     """
     handles the connection to the highscoresbot websocket api
     """
-    def __init__(self, url, token):
+    def __init__(self, url, token, username, password):
+        self.__username = username
+        self.__password = password
         super().__init__(url,
                          on_open=self.on_open,
                          on_close=self.on_close,
@@ -31,6 +33,14 @@ class EventClientSocket(WebSocketApp):
 
     def on_open(self):
         logger.info("connected to server.")
+        self.login(self.__username, self.__password)
+
+        self.register_commands()
+
+    def login(self, username, password):
+        self.send_json({"command": "login",
+                        "data": {"username": username,
+                                 "password": password}})
 
     def on_message(self, message):
         try:
@@ -57,10 +67,32 @@ class EventClientSocket(WebSocketApp):
         elif command == "disconnect":
             logger.debug("client disconnected from gameserver.")
             self.client.add_event(Disconnect())
+        elif command == "command":
+            pass
+        else:
+            logger.warning("unknown command: " + str(message))
 
     def send_json(self, message: dict):
         logger.debug(f"sent {message}")
         self.send(data=json.dumps(message))
+
+    def register_commands(self):
+        self.send_json({
+            "command": "registercommand",
+
+            "data": {
+                "name": "testcommand",
+                "description": "testcommand description",
+                "commandarguments": [
+                    {
+                        "name": "testargument",
+                        "description": "testargument description",
+                        "required": True,
+                        "type": "string"
+                    },
+                ],
+            }
+        })
 
     def on_error(self, error):
         logger.exception(f"an exception has occured: {str(error)}")

@@ -19,7 +19,9 @@ logger = log.Logger()
 
 class GameDataConsumer(JsonWebsocketConsumer):
     clients: List[GameDataConsumer] = []
-    master: GameDataConsumer = None
+    configs = {
+        "master": None
+    }
 
     def __init__(self, *args, **kwargs):
         super(GameDataConsumer, self).__init__(args=args, kwargs=kwargs)
@@ -53,7 +55,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
         elif actiontype == "logout":
             self.logout()
         elif actiontype == "disconnect":
-            if self == self.master:
+            if self == self.configs["master"]:
                 self.sendall(
                     {
                         "command": "disconnect",
@@ -77,7 +79,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 return
             content["data"]["prefix"] = self.user.prefix
             content["data"]["user_id"] = self.user.id
-            self.master.send_json(content)
+            self.configs["master"].send_json(content)
 
             content["success"] = True
             self.send_json(content)
@@ -94,7 +96,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
             # send the command to the client
             client.send_json(content)
         elif actiontype == "commandresponse":
-            self.master.send_json(content)
+            self.configs["master"].send_json(content)
 
     def login(self, username, password):
         user = authenticate(username=username, password=password)
@@ -148,7 +150,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 }
             )
             return
-        self.master = self
+        self.configs["master"] = self
         self.send_json(
             {
                 "command": "requestmaster",
@@ -158,7 +160,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
         )
 
     def ingame_event(self, content: dict):
-        if self != self.master:
+        if self != self.configs["master"]:
             self.send_json(
                 {
                     "command": "event",
