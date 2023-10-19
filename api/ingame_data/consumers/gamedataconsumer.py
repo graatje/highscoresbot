@@ -11,7 +11,7 @@ import log
 from channels.generic.websocket import JsonWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
 from api.enums import PermissionLevel
-from api.highscoresbot_api.models import User
+from api.highscoresbot_api.models import User, IngameCommand
 from api.ingame_data.consumers.validators.validators import Validators
 from api.ingame_data.objectmapping import objectmapping
 logger = log.Logger()
@@ -69,30 +69,8 @@ class GameDataConsumer(JsonWebsocketConsumer):
         elif actiontype == "requestmaster":
             self.requestMaster()
         elif actiontype == "registercommand":
-            if self.permissionlevel == self.permissionlevel.UNAUTHORIZED:
-                self.send_json(
-                    {
-                        "command": "registercommand",
-                        "success": False,
-                        "message": "Insufficient permissions for this command!"
-                    }
-                )
-                return
-            elif self.user.prefix is None:
-                self.send_json(
-                    {
-                        "command": "registercommand",
-                        "success": False,
-                        "message": "You have no prefix set! Please contact kevin123456 on discord."
-                    }
-                )
-                return
-            content["data"]["prefix"] = self.user.prefix
-            content["data"]["user_id"] = self.user.id
-            self.configs["master"].send_json(content)
+            self.registerCommand(content)
 
-            content["success"] = True
-            self.send_json(content)
         elif actiontype == "command":
             if self != self.configs["master"]:
                 self.send_json(
@@ -106,9 +84,11 @@ class GameDataConsumer(JsonWebsocketConsumer):
             # Fetch the user
             user = User.objects.get(id=data.get("user_id"))
             if not user:
+                print("user not found")
                 return
 
             if not (clients := [client for client in self.clients if client.user == user]):
+                print("client not found")
                 return
             client = clients[0]
 
@@ -117,19 +97,8 @@ class GameDataConsumer(JsonWebsocketConsumer):
             # send the command to the client
             client.send_json(content)
         elif actiontype == "commandresponse":
-            if self != self.commandResponses.get(data.get("uid"), None):
-                self.send_json(
-                    {
-                        "command": "commandresponse",
-                        "success": False,
-                        "message": "This command response is not for you or does not exist.",
-                        "data": {
-                            "uid": data.get("uid")
-                        },
-                    }
-                )
-                return
-            self.configs["master"].send_json(content)
+            self.commandResponse(content)
+
 
     def login(self, username, password):
         user = authenticate(username=username, password=password)
@@ -192,6 +161,19 @@ class GameDataConsumer(JsonWebsocketConsumer):
             }
         )
 
+        for ingameCommand in IngameCommand.objects.all():
+            self.send_json(
+                {
+                    "command": "registercommand",
+                    "data": {
+                        "name": ingameCommand.name,
+                        "description": ingameCommand.description,
+                        "commandarguments": ingameCommand.commandarguments,
+                        "user_id": ingameCommand.user.id
+                    }
+                }
+            )
+
     def ingame_event(self, content: dict):
         if self != self.configs["master"]:
             self.send_json(
@@ -227,6 +209,59 @@ class GameDataConsumer(JsonWebsocketConsumer):
         obj = model.objects.create(**data['data'])
 
         obj.save()
+
+    def registerCommand(self, content):
+        if self.permissionlevel == self.permissionlevel.UNAUTHORIZED:
+            self.send_json(
+                {
+                    "command": "registercommand",
+                    "success": False,
+                    "message": "Insufficient permissions for this command!"
+                }
+            )
+            return
+        elif self.user.prefix is None:
+            self.send_json(
+                {
+                    "command": "registercommand",
+                    "success": False,
+                    "message": "You have no prefix set! Please contact kevin123456 on discord."
+                }
+            )
+            return
+        content["data"]["prefix"] = self.user.prefix
+        content["data"]["user_id"] = self.user.id
+        self.configs["master"].send_json(content)
+
+        ingameCommand, created = IngameCommand.objects.update_or_create(
+            name=content["data"]["name"],
+            user=self.user,
+            defaults={
+                "description": content["data"]["description"],
+                "commandarguments": content["data"]["commandarguments"]
+            }
+        )
+
+        ingameCommand.save()
+
+        content["success"] = True
+        self.send_json(content)
+
+    def commandResponse(self, content):
+        if self != self.commandResponses.get(content["data"].get("uid"), None):
+            self.send_json(
+                {
+                    "command": "commandresponse",
+                    "success": False,
+                    "message": "This command response is not for you or does not exist.",
+                    "data": {
+                        "uid": content["data"].get("uid")
+                    },
+                }
+            )
+            return
+
+        self.configs["master"].send_json(content)
 
     def sendall(self, content: dict, close=False):
         logger.debug(f"sending to all clients: {content}")
