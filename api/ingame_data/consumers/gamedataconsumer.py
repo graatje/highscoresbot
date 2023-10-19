@@ -88,7 +88,15 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 return
 
             if not (clients := [client for client in self.clients if client.user == user]):
-                print("client not found")
+                self.configs["master"].send_json(
+                    {
+                        "command": "commandresponse",
+                        "success": False,
+                        "data": {
+                            "uid": data.get("uid"),
+                            "messages": ["User is not connected to the server."]
+                        }
+                    })
                 return
             client = clients[0]
 
