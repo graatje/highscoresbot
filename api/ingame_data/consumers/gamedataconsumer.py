@@ -76,6 +76,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 )
                 return
             content["data"]["prefix"] = self.user.prefix
+            content["data"]["user_id"] = self.user.id
             self.master.send_json(content)
 
             content["success"] = True
