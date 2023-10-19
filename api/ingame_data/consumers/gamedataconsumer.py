@@ -93,6 +93,8 @@ class GameDataConsumer(JsonWebsocketConsumer):
 
             # send the command to the client
             client.send_json(content)
+        elif actiontype == "commandresponse":
+            self.master.send_json(content)
 
     def login(self, username, password):
         user = authenticate(username=username, password=password)

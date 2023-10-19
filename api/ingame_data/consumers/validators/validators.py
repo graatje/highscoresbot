@@ -584,6 +584,33 @@ class Validators:
         ]
     }
 
+    COMMANDRESPONSE_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "data": {
+                "type": "object",
+                "properties": {
+                    "uid": {
+                        "type": "string"
+                    },
+                    "messages": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "required": [
+                    "uid",
+                    "messages"
+                ]
+            }
+        },
+        "required": [
+            "data"
+        ]
+    }
+
     @classmethod
     def validateJson(cls, actiontype, jsonData):
         if actiontype is None:
@@ -598,6 +625,8 @@ class Validators:
             jsonschema.validate(instance=jsonData, schema=cls.REGISTERCOMMAND_SCHEMA)
         elif actiontype == "command":
             jsonschema.validate(instance=jsonData, schema=cls.COMMAND_SCHEMA)
+        elif actiontype == "commandresponse":
+            jsonschema.validate(instance=jsonData, schema=cls.COMMANDRESPONSE_SCHEMA)
         return True
 
 
@@ -613,6 +642,15 @@ if __name__ == "__main__":
                                     },
                                     "user_id": 1,
                                     "expires_at": 1697706192355
+                                }
+                            }
+                            )
+    Validators.validateJson("commandresponse",
+                            {
+                                "command": "commandresponse",
+                                "data": {
+                                    "uid": "lnwyd15vzdqiviw4so",
+                                    "messages": ["hello world."]
                                 }
                             }
                             )
