@@ -19,7 +19,7 @@ class IngameCommand:
             "name": self.name,
             "description": self.description,
             "aliases": self.aliases,
-            "arguments": self.arguments
+            "commandarguments": self.arguments
         }
 
 
