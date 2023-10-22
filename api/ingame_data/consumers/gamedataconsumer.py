@@ -70,7 +70,6 @@ class GameDataConsumer(JsonWebsocketConsumer):
                      }
                 )
         elif actiontype == "event":
-            return
             self.ingame_event(content)
         elif actiontype == "requestmaster":
             self.requestMaster()
