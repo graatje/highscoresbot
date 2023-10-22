@@ -88,7 +88,7 @@ class EventClientSocket(WebSocketApp):
                     "command": "commandresponse",
                     "data": {
                         "uid": message["data"]["uid"],
-                        "messages": [f"an error has occured while executing command."]
+                        "messages": [f"an error has occured while executing command: {e}"]
                     }
                 })
         else:
