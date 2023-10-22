@@ -35,6 +35,11 @@ class GameDataConsumer(JsonWebsocketConsumer):
         self.user: User = self.scope["user"]  # is actually UserLazyObject but has same attributes as user
         logger.info(f"{self.user} connected.")
 
+    def disconnect(self, code):
+        super().disconnect(code)
+        self.clients.remove(self)
+        logger.info(f"{self.user} disconnected.")
+
     def receive_json(self, content, **kwargs):
         try:
             Validators.validateJson(content.get('command', None), content)
@@ -65,6 +70,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
                      }
                 )
         elif actiontype == "event":
+            return
             self.ingame_event(content)
         elif actiontype == "requestmaster":
             self.requestMaster()
@@ -105,7 +111,6 @@ class GameDataConsumer(JsonWebsocketConsumer):
             client.send_json(content)
         elif actiontype == "commandresponse":
             self.commandResponse(content)
-
 
     def login(self, username, password):
         user = authenticate(username=username, password=password)
