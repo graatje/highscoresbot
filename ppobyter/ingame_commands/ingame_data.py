@@ -22,7 +22,7 @@ def getencounters(player: str, page: int=1):
             message += f"<<{key}> : {val} >"
         message += ">"
         messages.append(message)
-    return messages
+    return messages or ["No encounters found for this player."]
 
 
 def register_commands(client):
