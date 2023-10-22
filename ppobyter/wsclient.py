@@ -9,6 +9,8 @@ import json
 
 from ppobyter.eventmaker import EventMaker
 from ppobyter.events.disconnect import Disconnect
+from ppobyter.ingame_commands import ingame_data
+from ppobyter.ingame_commands.framework.ingamecommand import IngameCommand
 from ppobyter.main import Main
 import log
 load_dotenv()
@@ -85,21 +87,12 @@ class EventClientSocket(WebSocketApp):
         self.send(data=json.dumps(message))
 
     def register_commands(self):
+        ingame_data.register_commands(self)
+
+    def register_command(self, command: IngameCommand):
         self.send_json({
             "command": "registercommand",
-
-            "data": {
-                "name": "testcommand",
-                "description": "testcommand description adjusted",
-                "commandarguments": [
-                    {
-                        "name": "testargument",
-                        "description": "testargument description",
-                        "required": True,
-                        "type": "string"
-                    },
-                ],
-            }
+            "data": command.to_json()
         })
 
     def on_error(self, error):

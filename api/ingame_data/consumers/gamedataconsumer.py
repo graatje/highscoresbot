@@ -84,7 +84,6 @@ class GameDataConsumer(JsonWebsocketConsumer):
             # Fetch the user
             user = User.objects.get(id=data.get("user_id"))
             if not user:
-                print("user not found")
                 return
 
             if not (clients := [client for client in self.clients if client.user == user]):
@@ -168,19 +167,6 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 "message": "Client set as master."
             }
         )
-
-        for ingameCommand in IngameCommand.objects.all():
-            self.send_json(
-                {
-                    "command": "registercommand",
-                    "data": {
-                        "name": ingameCommand.name,
-                        "description": ingameCommand.description,
-                        "commandarguments": ingameCommand.commandarguments,
-                        "user_id": ingameCommand.user.id
-                    }
-                }
-            )
 
     def ingame_event(self, content: dict):
         if self != self.configs["master"]:
