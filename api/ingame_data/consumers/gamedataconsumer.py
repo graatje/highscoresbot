@@ -92,7 +92,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
             if not user:
                 return
 
-            if not (clients := [client for client in self.clients if client.user == user]):
+            if not (clients := [client for client in self.clients if client.user == user]) and self.configs["master"] is not None:
                 self.configs["master"].send_json(
                     {
                         "command": "commandresponse",
@@ -173,6 +173,18 @@ class GameDataConsumer(JsonWebsocketConsumer):
             }
         )
 
+        # Send all commands of connected clients to the master
+        for command in IngameCommand.objects.all():
+            for client in self.clients:
+                if client.user == command.user:
+                    self.send_json(
+                        {
+                            "command": "registercommand",
+                            "data": command.to_json()
+                        }
+                    )
+                    break
+
     def ingame_event(self, content: dict):
         if self != self.configs["master"]:
             self.send_json(
@@ -230,7 +242,8 @@ class GameDataConsumer(JsonWebsocketConsumer):
             return
         content["data"]["prefix"] = self.user.prefix
         content["data"]["user_id"] = self.user.id
-        self.configs["master"].send_json(content)
+        if self.configs["master"] is not None:
+            self.configs["master"].send_json(content)
 
         ingameCommand, created = IngameCommand.objects.update_or_create(
             name=content["data"]["name"],
@@ -259,8 +272,8 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 }
             )
             return
-
-        self.configs["master"].send_json(content)
+        if self.configs["master"] is not None:
+            self.configs["master"].send_json(content)
 
     def sendall(self, content: dict, close=False):
         logger.debug(f"sending to all clients: {content}")

@@ -20,3 +20,12 @@ class IngameCommand(models.Model):
 
     class Meta:
         unique_together = (('name', 'user',),)
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "commandarguments": self.commandarguments,
+            "user_id": self.user.id,
+            "prefix": self.user.prefix
+        }

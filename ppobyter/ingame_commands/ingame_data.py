@@ -8,7 +8,8 @@ def getencounters(player: str):
 
     :param player: the player to get the encounters of
     """
-    pass
+    print(player)
+    return ["i", "am", "a", "test"]
 
 
 def register_commands(client):

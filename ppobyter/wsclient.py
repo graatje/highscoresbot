@@ -32,6 +32,7 @@ class EventClientSocket(WebSocketApp):
         self.client = Main(token=token)
         t = threading.Thread(target=lambda: asyncio.run(self.client.start()))
         t.start()
+        self.commands = {}
 
     def on_open(self):
         logger.info("connected to server.")
@@ -70,11 +71,12 @@ class EventClientSocket(WebSocketApp):
             logger.debug("client disconnected from gameserver.")
             self.client.add_event(Disconnect())
         elif command == "command":
+            messages = self.commands.get(message["data"]["command"]).execute(**message["data"]["arguments"])
             resp = {
                 "command": "commandresponse",
                 "data": {
                     "uid": message["data"]["uid"],
-                    "messages": ["command working."]
+                    "messages": messages
                 },
             }
             self.send_json(resp)
@@ -90,6 +92,7 @@ class EventClientSocket(WebSocketApp):
         ingame_data.register_commands(self)
 
     def register_command(self, command: IngameCommand):
+        self.commands[command.name] = command
         self.send_json({
             "command": "registercommand",
             "data": command.to_json()
