@@ -17,3 +17,8 @@ class Encounter(BaseModel):
                 "date": self.date,
                 "level": self.level}
         return resp
+
+    def __str__(self):
+        json = self.to_json()
+        json["level"] = f"Lv {self.level}" if self.level else ""
+        return "{player} has encountered a {level} {pokemon} on {date}".format(**json)
