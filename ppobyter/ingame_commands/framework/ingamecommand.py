@@ -35,18 +35,17 @@ def ingameCommand(name=None, description=None, aliases=()):
         params = {param.arg_name: param for param in parseddoc.params if param.arg_name}
         arguments = []
 
-        varnames = command.__code__.co_varnames
-        for arg in varnames:
+        varnames = command.__code__.co_varnames[:command.__code__.co_argcount]
+        for i, arg in enumerate(varnames):
             # validating command arguments
             if arg not in command.__annotations__:
                 raise ValueError(f"missing annotation for argument {arg}.")
             if params[arg].description is None:
                 raise ValueError(f"missing description for argument {arg}.")
-
             arguments.append({
                 "name": arg,
                 "description": params[arg].description,
-                "required": not params[arg].is_optional,
+                "required": len(varnames) - len(command.__defaults__) >= i + 1,
                 "type": "number" if command.__annotations__[arg] == int else "string"
             })
 
