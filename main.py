@@ -4,8 +4,6 @@ import traceback
 from dotenv import load_dotenv
 
 
-
-
 def init_django():
     print("initializing django")
     import django

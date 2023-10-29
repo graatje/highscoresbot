@@ -1,6 +1,3 @@
-import sqlite3
-import datetime
-
 from .clanevent import ClanEvent
 
 

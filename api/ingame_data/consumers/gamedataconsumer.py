@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import threading
+import time
+
+import schedule
 import datetime
 import re
 from typing import List, Union
@@ -29,6 +33,45 @@ class GameDataConsumer(JsonWebsocketConsumer):
         self.user: Union[User, AnonymousUser] = AnonymousUser()
         self.permissionlevel = PermissionLevel.UNAUTHORIZED
 
+        self.schedule_settime_events()
+
+        self.timed_events_thread = threading.Thread(target=self._run_timed_events)
+        self.timed_events_thread.start()
+
+    def _run_timed_events(self):
+        while True:
+            if self.timed_events_thread is None:
+                break
+            schedule.run_pending()
+            time.sleep(30)
+
+    def schedule_settime_events(self):
+        clanwars_tier_1 = {
+            "command": "event",
+            "data": {
+                "eventtype": "clanwars",
+                "data": {
+                    "tier": 1,
+                    "minstillstart": 30
+                }
+            }
+        }
+        schedule.every().saturday.at("18:30").do(lambda: self.send_json(clanwars_tier_1))
+        schedule.every().sunday.at("18:30").do(lambda: self.send_json(clanwars_tier_1))
+
+        clanwars_tier_2 = {
+            "command": "event",
+            "data": {
+                "eventtype": "clanwars",
+                "data": {
+                    "tier": 2,
+                    "minstillstart": 10
+                }
+            }
+        }
+        schedule.every().saturday.at("19:30").do(lambda: self.send_json(clanwars_tier_2))
+        schedule.every().sunday.at("19:30").do(lambda: self.send_json(clanwars_tier_2))
+
     def connect(self):
         super().connect()
         self.clients.append(self)
@@ -39,6 +82,7 @@ class GameDataConsumer(JsonWebsocketConsumer):
         super().disconnect(code)
         self.clients.remove(self)
         logger.info(f"{self.user} disconnected.")
+        self.timed_events_thread = None
 
     def receive_json(self, content, **kwargs):
         try:

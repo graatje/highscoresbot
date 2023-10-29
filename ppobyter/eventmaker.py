@@ -11,7 +11,7 @@ from ppobyter.events.tournament import Tournament
 from ppobyter.events.worldboss import Worldboss
 from ppobyter.events.honey import Honey
 from ppobyter.events.encounter import Encounter
-
+from ppobyter.events.clanwars import Clanwars
 from ppobyter.events.chest import Chest
 from ppobyter.events.itembomb import IndividualBomb
 from ppobyter.events.roll import Roll
@@ -62,6 +62,8 @@ class EventMaker:
             event = Roll(kwargs["player"], kwargs["pokemon"], kwargs["level"])
         elif eventname == "itembomb":
             event = IndividualBomb(kwargs["player"], kwargs["item"])
+        elif eventname == "clanwars":
+            event = Clanwars(kwargs["tier"], kwargs["minstillstart"])
         return event
 
 
