@@ -113,6 +113,7 @@ class EventClientSocket(WebSocketApp):
 
     def on_close(self, close_status_code, close_msg):
         logger.info(f"websocket closed with status code: {close_status_code} and message: {close_msg}.")
+        raise Exception("websocket closed.")
 
     def _callback(self, callback, *args):
         if callback:

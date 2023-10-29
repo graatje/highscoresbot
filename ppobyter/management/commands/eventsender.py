@@ -1,7 +1,7 @@
 from abc import ABC
 import os
 from django.core.management.base import BaseCommand, CommandError
-
+import time
 from ppobyter.wsclient import EventClientSocket
 
 
@@ -10,9 +10,15 @@ class Command(BaseCommand, ABC):
 
     def handle(self, *args, **options):
         print("hello world.")
-        a = EventClientSocket(url="ws://127.0.0.1:8000/api/ingame_data/ws/gamedatareceiver/",
-                              token=os.environ.get("discordtoken"),
-                              username=os.environ.get("botusername"),
-                              password=os.environ.get("botpassword")
-                              )
-        a.run_forever()
+
+        while True:
+            try:
+                a = EventClientSocket(url="ws://127.0.0.1:8000/api/ingame_data/ws/gamedatareceiver/",
+                                      token=os.environ.get("discordtoken"),
+                                      username=os.environ.get("botusername"),
+                                      password=os.environ.get("botpassword")
+                                      )
+                a.run_forever()
+            except Exception as e:
+                print("EXCEPTION OCCURRED: " + str(e))
+            time.sleep(10)
