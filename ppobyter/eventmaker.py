@@ -45,7 +45,7 @@ class EventMaker:
             event = ServerRestart()
         elif eventname == "tournament":
             prizes = [prize.strip() for prize in kwargs["prizes"].split(",")]
-            event = Tournament(kwargs["tournament"], prizes)
+            event = Tournament(kwargs["tournament"], prizes, kwargs.get("minstillstart", 30))
         elif eventname == "altar" and kwargs["altartype"] == "Arceus":
             event = ArceusAltar(kwargs["player"], kwargs["amount"])
         elif eventname == "altar" and kwargs["altartype"] == "Kyogre":

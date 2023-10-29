@@ -9,7 +9,7 @@ class Tournament(Event):
     """
     This event triggers when a tournament shows up.
     """
-    def __init__(self, tournament: str, prizes: List[str]):
+    def __init__(self, tournament: str, prizes: List[str], minstillstart: int = 30):
         """
         Calls superclass init, sets the tournament type, and the prizes. Also inserts the prizes into a database.
         :param tournament: The tournament type
@@ -17,6 +17,7 @@ class Tournament(Event):
         """
         self.prizes = [prize.lower() for prize in prizes]
         self.tournament = tournament.lower()
+        self.minstillstart = minstillstart
         self.EVENTNAME = "tournament"
         super(Tournament, self).__init__()
 
@@ -25,7 +26,7 @@ class Tournament(Event):
         makes the message that gets sent to the recipients.
         :return: The message that gets sent.
         """
-        return f"The {self.tournament} Tournament will start in 30 minutes at the Vermilion City PvP Arena. " \
+        return f"The {self.tournament} Tournament will start in {self.minstillstart} minutes at the Vermilion City PvP Arena. " \
                f"Tournament prize: " + ", ".join(self.prizes)
 
     def determineRecipients(self):
