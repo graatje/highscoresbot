@@ -20,3 +20,10 @@ class Clanwars(Event):
 
     def makeMessage(self) -> str:
         return f"tier {self.tier} of clan wars is starting in {self.minstillstart} minutes."
+
+    def determineRecipients(self, **kwargs):
+        """
+        determines the recipients for the event.
+        :param kwargs: none required
+        """
+        self._determinechannelrecipients()
