@@ -17,7 +17,7 @@ from django.contrib.auth.models import AnonymousUser
 from api.enums import PermissionLevel
 from api.highscoresbot_api.models import User, IngameCommand
 from api.ingame_data.consumers.validators.validators import Validators
-from api.ingame_data.models import Activity
+from api.ingame_data.models import Activity, Onlinelist
 from api.ingame_data.objectmapping import objectmapping
 logger = log.Logger()
 
@@ -127,6 +127,10 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 )
                 return
             now = datetime.datetime.now()
+            Onlinelist.objects.create(
+                time=now,
+                onlineAmount=len(set(data.get("users")))
+            )
             for user in set(data.get("users")):
                 Activity.objects.update_or_create(
                     player=user,
