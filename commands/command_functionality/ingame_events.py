@@ -13,8 +13,12 @@ from utils.tablify_dict import tablify_dict
 async def lastonline(sendable: Sendable, playername: str=None):
     if playername is not None:
         func = sync_to_async(Activity.objects.get)
-        activity_obj: Activity = await func(playername__iexact=playername)
-        await sendable.send(f"{activity_obj.player} was last online at {activity_obj.get_lastonline()}")
+        try:
+            activity_obj: Activity = await func(player__iexact=playername)
+            await sendable.send(f"{activity_obj.player} was last online at {activity_obj.get_lastonline()}")
+        except Activity.DoesNotExist:
+            await sendable.send(f"I have no information on when {playername} was last online.")
+            return
     else:
         func = sync_to_async(Activity.objects.aggregate)
         highest_lastonline = await func(Max('lastonline'))

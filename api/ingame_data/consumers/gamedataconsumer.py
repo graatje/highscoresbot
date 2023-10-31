@@ -17,6 +17,7 @@ from django.contrib.auth.models import AnonymousUser
 from api.enums import PermissionLevel
 from api.highscoresbot_api.models import User, IngameCommand
 from api.ingame_data.consumers.validators.validators import Validators
+from api.ingame_data.models import Activity
 from api.ingame_data.objectmapping import objectmapping
 logger = log.Logger()
 
@@ -115,6 +116,24 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 )
         elif actiontype == "event":
             self.ingame_event(content)
+        elif actiontype == "onlinelist":
+            if self != self.configs["master"]:
+                self.send_json(
+                    {
+                        "command": "onlinelist",
+                        "success": False,
+                        "message": "Only master can submit onlinelist."
+                    }
+                )
+                return
+            now = datetime.datetime.now()
+            for user in set(data.get("users")):
+                Activity.objects.update_or_create(
+                    player=user,
+                    defaults={
+                        "lastonline": now
+                    }
+                )
         elif actiontype == "requestmaster":
             self.requestMaster()
         elif actiontype == "registercommand":
