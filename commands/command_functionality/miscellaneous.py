@@ -89,10 +89,7 @@ async def clanlist(sendable: Sendable, clanname: str):
 
 
 async def invite(sendable: Sendable):
-    invitelink = "https://discord.com/login?redirect_to=" \
-            "%2Foauth2%2Fauthorize%3Fclient_id%3D733434249771745401%26permissions%3D2048%26redirect_uri" \
-            "%3Dhttps%253A%252F%252Fdiscordapp.com%252Foauth2%252Fauthorize%253F%2526" \
-            "permissions%253D141312%2526client_id%253D733434249771745401%2526scope%253Dbot%26scope%3Dbot"
+    invitelink = "https://discord.com/api/oauth2/authorize?client_id=733434249771745401&permissions=2147617792&scope=bot"
     embed = discord.Embed()
     embed.description = "this is the [invite link]" \
                         "({})" \
