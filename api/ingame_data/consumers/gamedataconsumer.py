@@ -70,8 +70,8 @@ class GameDataConsumer(JsonWebsocketConsumer):
                 }
             }
         }
-        schedule.every().saturday.at("19:30").do(lambda: self.send_json(clanwars_tier_2))
-        schedule.every().sunday.at("19:30").do(lambda: self.send_json(clanwars_tier_2))
+        schedule.every().saturday.at("19:40").do(lambda: self.send_json(clanwars_tier_2))
+        schedule.every().sunday.at("19:40").do(lambda: self.send_json(clanwars_tier_2))
 
     def connect(self):
         super().connect()
