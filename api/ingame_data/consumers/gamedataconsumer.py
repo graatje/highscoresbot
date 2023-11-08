@@ -74,10 +74,14 @@ class GameDataConsumer(JsonWebsocketConsumer):
         schedule.every().sunday.at("19:40").do(lambda: self.send_json(clanwars_tier_2))
 
         # check if the client is still online
-        schedule.every(5).minutes.do(lambda: self.send_json({"command": "connectioncheck"}))
+        schedule.every(2).minutes.do(lambda: self.send_json({"command": "connectioncheck"}))
 
-        # get the onlinelist
-        schedule.every(3).minutes.do(lambda: self.send_json({"command": "onlinelist"}))
+        schedule.every(3).minutes.do(self.request_onlinelist)
+
+    def request_onlinelist(self):
+        if self.configs["master"] == self:
+            # get the onlinelist
+            self.send_json({"command": "onlinelist"})
 
     def connect(self):
         super().connect()
