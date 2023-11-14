@@ -16,7 +16,7 @@ Django==4.1
 sqlparse==0.4.2
 tzdata==2022.1
 pygments
-psycopg2
+psycopg2-binary
 channels~=3.0.5
 beautifulsoup4~=4.10.0
 jsonschema~=4.17.3
