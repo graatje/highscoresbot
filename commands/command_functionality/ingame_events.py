@@ -27,7 +27,7 @@ async def lastonline(sendable: Sendable, playername: str=None):
         func = sync_to_async(Activity.objects.aggregate)
         highest_lastonline = await func(Max('lastonline'))
         highest_lastonline = highest_lastonline["lastonline__max"]
-        await sendable.send(f"last online check was at <t:{int(highest_lastonline.timestamp())}>. \nList of players configured in player")
+        await sendable.send(f"last online check was at <t:{int(highest_lastonline.timestamp())}>. \nList of players configured in playerconfig:")
 
         # Get all players that are in playerconfig or in clanconfig
         players = [playerconfig.player async for playerconfig in Playerconfig.objects.filter(guild=sendable.guild.id)]
