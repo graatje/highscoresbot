@@ -17,7 +17,7 @@ from django.contrib.auth.models import AnonymousUser
 from api.enums import PermissionLevel
 from api.highscoresbot_api.models import User, IngameCommand
 from api.ingame_data.consumers.validators.validators import Validators
-from api.ingame_data.models import Activity, Onlinelist
+from api.ingame_data.models import Activity, Onlinelist, Event, Eventname
 from api.ingame_data.objectmapping import objectmapping
 logger = log.Logger()
 
@@ -273,6 +273,13 @@ class GameDataConsumer(JsonWebsocketConsumer):
             return
         data = content.get('data', {})
         eventtype = data.get('eventtype')
+
+        try:
+            Event(eventname=Eventname.objects.get(name=eventtype), data=data.get('data'), time=datetime.datetime.now()).save()
+        except Eventname.DoesNotExist:
+            logger.error(f"Eventname {eventtype} does not exist.")
+        except Exception as e:
+            logger.exception(f"Exception occurred when saving event: {e}")
 
         # Data is already validated before this method is called so type is success.
         content["success"] = True

@@ -9,5 +9,6 @@ from .honeylocation import Honeylocation
 from .tournamentprize import Tournamentprize
 from .worldbosslocation import Worldbosslocation
 from .onlinelist import Onlinelist
+from .event import Event
 __all__ = ["Encounter", "Roll", "Chest", "Activity", "Worldboss", "Eventname", "Honeylocation", "Tournamentprize",
-           "Worldbosslocation", "Onlinelist"]
+           "Worldbosslocation", "Onlinelist", "Event"]
