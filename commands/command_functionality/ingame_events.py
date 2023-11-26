@@ -1,7 +1,11 @@
 import datetime
+from functools import reduce
+
 import discord
 from asgiref.sync import sync_to_async
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Q
+
+from api.eventconfigurations.models import Playerconfig
 from commands.interractions.resultmessageshower import ResultmessageShower
 from commands.sendable import Sendable
 from commands.utils.utils import getworldbosstime
@@ -23,7 +27,17 @@ async def lastonline(sendable: Sendable, playername: str=None):
         func = sync_to_async(Activity.objects.aggregate)
         highest_lastonline = await func(Max('lastonline'))
         highest_lastonline = highest_lastonline["lastonline__max"]
-        await sendable.send(f"last online check was at <t:{int(highest_lastonline.timestamp())}>")
+        await sendable.send(f"last online check was at <t:{int(highest_lastonline.timestamp())}>. \nList of players configured in player")
+
+        # Get all players that are in playerconfig or in clanconfig
+        players = [playerconfig.player async for playerconfig in Playerconfig.objects.filter(guild=sendable.guild.id)]
+
+        q_list = map(lambda n: Q(player__iexact=n), players)
+        q_list = reduce(lambda a, b: a | b, q_list)
+        activity_objs = [activity.to_dict() async for activity in Activity.objects.filter(q_list).order_by("lastonline")]
+        for msg in tablify_dict(activity_objs):
+            await sendable.send(msg)
+
 
 
 async def getencounters(sendable: Sendable, searchtype: str, name: str=None):

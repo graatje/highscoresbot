@@ -12,3 +12,9 @@ class Activity(BaseModel):
 
     def get_lastonline(self, obscurified=True):
         return self.lastonline.date() if obscurified else self.lastonline
+
+    def to_dict(self, obscurified=True):
+        return {
+            "player": self.player,
+            "lastonline": self.get_lastonline(obscurified)
+        }
