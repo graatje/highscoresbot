@@ -40,7 +40,8 @@ async def eventnameautocomplete(interaction: Interaction, current: str):
 
 
 async def playerconfigactiontypeautocomplete(*args, **kwargs):
-    return [app_commands.Choice(name="add player", value="add"),
+    return [app_commands.Choice(name="add multiple players (separated by comma)", value="addmultiple"),
+            app_commands.Choice(name="add player", value="add"),
             app_commands.Choice(name="remove player", value="remove"),
             app_commands.Choice(name="show players", value="show")]
 

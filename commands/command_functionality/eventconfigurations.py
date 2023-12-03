@@ -308,7 +308,14 @@ async def playerconfig(sendable: Sendable, actiontype: str, player: str=None):
         await sendable.send(f"please specify a player to {actiontype}.")
         return
 
-    if actiontype == 'add':
+    if actiontype == "addmultiple":
+        if "," not in player:
+            await sendable.send("please separate players with a comma.")
+            return
+        players = [p.strip() for p in player.split(",")]
+        for player in players:
+            await playerconfig(sendable, "add", player)
+    elif actiontype == 'add':
         try:
             await (sync_to_async(Playerconfig.objects.create))(guild=sendable.guild.id, player=player)
             await sendable.send(f"{player} added to playerconfig!")
