@@ -24,8 +24,8 @@ def init_django():
                 'ENGINE': 'django.db.backends.postgresql_psycopg2',
                 'NAME': 'pokemon_planet_api',
                 'USER': os.environ.get("PGUSERNAME"),
-                "PASSWORD": os.environ.get("PASSWORD"),
-                "HOST": "127.0.0.1",
+                "PASSWORD": os.environ.get("PGPASSWORD"),
+                "HOST": os.environ.get("PGHOST", "127.0.0.1"),
                 "PORT": 5432
             }
         },

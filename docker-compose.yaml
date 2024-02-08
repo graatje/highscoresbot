@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  highscoresbot-postgres:
+    build:
+      context: ./docker/database
+      dockerfile: Dockerfile
+    container_name: highscoresbot-postgres
+    environment:
+      POSTGRES_DB: pokemon_planet_api
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+    networks:
+      - highscoresbot-network
+    ports:
+      - "5432:5432"
+
+  highscoresbot:
+    build:
+      context: ./
+      dockerfile: ./docker/python/Dockerfile
+    container_name: highscoresbot
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - highscoresbot-network
+    restart: on-failure
+    depends_on:
+      - highscoresbot-postgres
+    links:
+      - highscoresbot-postgres
+
+networks:
+  highscoresbot-network:
+    driver: bridge
