@@ -2,14 +2,18 @@ from abc import ABC
 from api.ingame_data.models.eventname import Eventname
 from api.highscores.models.highscoreconfig import HighscoreConfig
 from django.core.management.base import BaseCommand
+from api.ingame_data.models import Encounter
+import datetime
+import random
 
 
 class Command(BaseCommand, ABC):
     help = 'Seeds the database with initial data.'
 
     def handle(self, *args, **options):
-        self._seedEventNames()
-        self._seedHighscoreConfigs()
+        # self._seedEventNames()
+        # self._seedHighscoreConfigs()
+        self._seedEncounters()
 
     def _seedEventNames(self):
         Eventname.objects.bulk_create([
@@ -72,3 +76,22 @@ class Command(BaseCommand, ABC):
             HighscoreConfig(highscorename="uberswins", url="https://pokemon-planet.com/tournamentWins3.php", pagesamount=1, fieldmapping={"wins": "Wins", "rating": "Rating", "username": "Username"}, verbose_name="Most Ubers Tournament Wins", intfields={"wins": 1, "rating": 1, "username": 0}),
 
         ])
+
+    def _seedEncounters(self):
+        self.stdout.write(self.style.SUCCESS('Seeding encounters'))
+
+        # Adding encounters to a list cause bulk-creating is faster.
+        encounters = []
+        for i in range(1, random.randint(10000, 10000)):
+            encounters.append(
+                Encounter(
+                    player=f"player{random.randint(1, 100)}",
+                    pokemon=f"pokemon{random.randint(1, 100)}",
+                    date=datetime.date.today() - datetime.timedelta(days=random.randint(1, 365)),
+                    level=random.randint(1, 120)
+                )
+            )
+
+        Encounter.objects.bulk_create(encounters)
+
+        self.stdout.write(self.style.SUCCESS('Seeded encounters'))
