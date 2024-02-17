@@ -15,8 +15,8 @@ class Command(BaseCommand, ABC):
     help = 'Seeds the database with initial data.'
 
     def handle(self, *args, **options):
-        # self._seedEventNames()
-        # self._seedHighscoreConfigs()
+        self._seedEventNames()
+        self._seedHighscoreConfigs()
         self._seedEncounters()
         self._seedEventconfigs()
 
