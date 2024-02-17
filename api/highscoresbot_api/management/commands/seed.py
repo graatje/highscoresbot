@@ -15,12 +15,18 @@ class Command(BaseCommand, ABC):
     help = 'Seeds the database with initial data.'
 
     def handle(self, *args, **options):
+        self.stdout.write(self.style.SUCCESS('Seeding database, consider running python manage.py flush first to clear the database.'))
+
         self._seedEventNames()
         self._seedHighscoreConfigs()
         self._seedEncounters()
         self._seedEventconfigs()
 
+        self.stdout.write(self.style.SUCCESS('Seeded database'))
+
     def _seedEventNames(self):
+        self.stdout.write(self.style.SUCCESS('Seeding eventnames'))
+
         Eventname.objects.bulk_create([
             Eventname(name="arceusaltar", fields={}),
             Eventname(name="chest", fields={}),
@@ -40,7 +46,11 @@ class Command(BaseCommand, ABC):
             Eventname(name="worldboss", fields={}),
         ])
 
+        self.stdout.write(self.style.SUCCESS('Seeded eventnames'))
+
     def _seedHighscoreConfigs(self):
+        self.stdout.write(self.style.SUCCESS('Seeding highscoreconfigs'))
+
         HighscoreConfig.objects.bulk_create([
             HighscoreConfig(highscorename="ancientcavemapcontrol", url="https://pokemon-planet.com/ancientCave.php", pagesamount=1, fieldmapping={"clan": "Clan Name", "pokemon_defeated": "Pokemon Defeated"}, verbose_name="Ancient Cave Map Control", intfields={"clan": 0, "pokemon_defeated": 1}),
             HighscoreConfig(highscorename="battlezonemapcontrol", url="https://pokemon-planet.com/battleZoneMapControl.php", pagesamount=1, fieldmapping={"clan": "Clan Name", "pokemon_defeated": "Pokemon Defeated"}, verbose_name="Battle Zone Map Control", intfields={"clan": 0, "pokemon_defeated": 1}),
@@ -82,6 +92,8 @@ class Command(BaseCommand, ABC):
 
         ])
 
+        self.stdout.write(self.style.SUCCESS('Seeded highscoreconfigs'))
+
     def _seedEncounters(self):
         self.stdout.write(self.style.SUCCESS('Seeding encounters'))
 
@@ -99,10 +111,11 @@ class Command(BaseCommand, ABC):
 
         Encounter.objects.bulk_create(encounters)
 
-        self.stdout.write(self.style.SUCCESS('Seeded encounters'))
+        self.stdout.write(self.style.SUCCESS(f'Seeded {len(encounters)} encounters'))
 
     def _seedEventconfigs(self):
         self.stdout.write(self.style.SUCCESS('Seeding eventconfigs'))
+
         channel = 890306062211772516
         guild = 652087685124456449
         pingrole = 698616178125307986
