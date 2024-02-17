@@ -1,17 +1,32 @@
 from abc import ABC
+
+from django.core.management.base import BaseCommand
+
+from api.ingame_data.models import Encounter
 from api.ingame_data.models.eventname import Eventname
 from api.highscores.models.highscoreconfig import HighscoreConfig
-from django.core.management.base import BaseCommand
+from api.eventconfigurations.models import Eventconfiguration
+
+import datetime
+import random
 
 
 class Command(BaseCommand, ABC):
     help = 'Seeds the database with initial data.'
 
     def handle(self, *args, **options):
+        self.stdout.write(self.style.SUCCESS('Seeding database, consider running python manage.py flush first to clear the database.'))
+
         self._seedEventNames()
         self._seedHighscoreConfigs()
+        self._seedEncounters()
+        self._seedEventconfigs()
+
+        self.stdout.write(self.style.SUCCESS('Seeded database'))
 
     def _seedEventNames(self):
+        self.stdout.write(self.style.SUCCESS('Seeding eventnames'))
+
         Eventname.objects.bulk_create([
             Eventname(name="arceusaltar", fields={}),
             Eventname(name="chest", fields={}),
@@ -31,7 +46,11 @@ class Command(BaseCommand, ABC):
             Eventname(name="worldboss", fields={}),
         ])
 
+        self.stdout.write(self.style.SUCCESS('Seeded eventnames'))
+
     def _seedHighscoreConfigs(self):
+        self.stdout.write(self.style.SUCCESS('Seeding highscoreconfigs'))
+
         HighscoreConfig.objects.bulk_create([
             HighscoreConfig(highscorename="ancientcavemapcontrol", url="https://pokemon-planet.com/ancientCave.php", pagesamount=1, fieldmapping={"clan": "Clan Name", "pokemon_defeated": "Pokemon Defeated"}, verbose_name="Ancient Cave Map Control", intfields={"clan": 0, "pokemon_defeated": 1}),
             HighscoreConfig(highscorename="battlezonemapcontrol", url="https://pokemon-planet.com/battleZoneMapControl.php", pagesamount=1, fieldmapping={"clan": "Clan Name", "pokemon_defeated": "Pokemon Defeated"}, verbose_name="Battle Zone Map Control", intfields={"clan": 0, "pokemon_defeated": 1}),
@@ -72,3 +91,52 @@ class Command(BaseCommand, ABC):
             HighscoreConfig(highscorename="uberswins", url="https://pokemon-planet.com/tournamentWins3.php", pagesamount=1, fieldmapping={"wins": "Wins", "rating": "Rating", "username": "Username"}, verbose_name="Most Ubers Tournament Wins", intfields={"wins": 1, "rating": 1, "username": 0}),
 
         ])
+
+        self.stdout.write(self.style.SUCCESS('Seeded highscoreconfigs'))
+
+    def _seedEncounters(self):
+        self.stdout.write(self.style.SUCCESS('Seeding encounters'))
+
+        # Adding encounters to a list cause bulk-creating is faster.
+        encounters = []
+        for i in range(random.randint(10000, 100000)):
+            encounters.append(
+                Encounter(
+                    player=f"player{random.randint(1, 100)}",
+                    pokemon=f"pokemon{random.randint(1, 100)}",
+                    date=datetime.date.today() - datetime.timedelta(days=random.randint(1, 365)),
+                    level=random.randint(1, 120)
+                )
+            )
+
+        Encounter.objects.bulk_create(encounters)
+
+        self.stdout.write(self.style.SUCCESS(f'Seeded {len(encounters)} encounters'))
+
+    def _seedEventconfigs(self):
+        self.stdout.write(self.style.SUCCESS('Seeding eventconfigs'))
+
+        channel = 890306062211772516
+        guild = 652087685124456449
+        pingrole = 698616178125307986
+
+        Eventconfiguration.objects.bulk_create([
+            Eventconfiguration(eventname=Eventname.objects.get(name="arceusaltar"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="chest"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="clanwars"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="dianciealtar"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="elite4"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="encounter"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="goldrush"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="honey"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="itembomb"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="kyogrealtar"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="roll"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="serverrestart"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="swarm"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="tournament"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="worldblessing"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+            Eventconfiguration(eventname=Eventname.objects.get(name="worldboss"), guild=guild, channel=channel, pingrole=pingrole, time_in_channel=5, failed_sends=0),
+        ])
+
+        self.stdout.write(self.style.SUCCESS('Seeded eventconfigs'))
