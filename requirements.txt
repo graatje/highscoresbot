@@ -22,3 +22,5 @@ beautifulsoup4~=4.10.0
 jsonschema~=4.17.3
 schedule
 docstring-parser==0.15
+certifi==2024.2.2
+djangorestframework==3.14.0
