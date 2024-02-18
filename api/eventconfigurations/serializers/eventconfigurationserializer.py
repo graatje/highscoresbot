@@ -7,4 +7,4 @@ class EventconfigurationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Eventconfiguration
-        fields = ["eventname", "guild", "channel", "pingrole", "time_in_channel", "failed_sends"]
+        fields = ["id", "eventname", "guild", "channel", "pingrole", "time_in_channel", "failed_sends"]
