@@ -17,5 +17,7 @@ from django.urls import path, include
 
 
 urlpatterns = [
-    path('api/ingame_data/', include('api.ingame_data.urls'))
+    path('api/ingame_data/', include('api.ingame_data.urls')),
+    path('api/eventconfiguration/', include('api.eventconfigurations.urls')),
+    path('api-auth/', include('rest_framework.urls'))
 ]
