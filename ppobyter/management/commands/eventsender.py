@@ -13,7 +13,7 @@ class Command(BaseCommand, ABC):
 
         while True:
             try:
-                a = EventClientSocket(url="ws://127.0.0.1:8000/api/ingame_data/ws/gamedatareceiver/",
+                a = EventClientSocket(url="ws://127.0.0.1:80/api/ingame_data/ws/gamedatareceiver/",
                                       token=os.environ.get("discordtoken"),
                                       username=os.environ.get("botusername"),
                                       password=os.environ.get("botpassword")
