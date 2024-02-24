@@ -5,16 +5,20 @@ from api.ingame_data.serializers.eventserializer import EventSerializer
 
 
 class EventViewSet(viewsets.ReadOnlyModelViewSet):
-    ALLOWED_EVENTS = [
-        Eventname.objects.get(name="swarm"),
-        Eventname.objects.get(name="goldrush"),
-        Eventname.objects.get(name="arceusaltar"),
-        Eventname.objects.get(name="kyogrealtar"),
-        Eventname.objects.get(name="honey"),
-        Eventname.objects.get(name="tournament"),
-        Eventname.objects.get(name="worldblessing"),
+    try:
+        ALLOWED_EVENTS = [
+            Eventname.objects.get(name="swarm"),
+            Eventname.objects.get(name="goldrush"),
+            Eventname.objects.get(name="arceusaltar"),
+            Eventname.objects.get(name="kyogrealtar"),
+            Eventname.objects.get(name="honey"),
+            Eventname.objects.get(name="tournament"),
+            Eventname.objects.get(name="worldblessing"),
 
-    ]
+        ]
+    except:
+        ALLOWED_EVENTS = []
+
     queryset = Event.objects.all().order_by("-time")
     serializer_class = EventSerializer
 
