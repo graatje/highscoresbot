@@ -150,6 +150,6 @@ REST_FRAMEWORK = {
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "api.highscoresbot_api.channellayer.ChannelLayer"
      }
 }
