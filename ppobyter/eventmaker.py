@@ -32,7 +32,7 @@ class EventMaker:
         print(kwargs)
         event = None
         if eventname == "swarm":
-            event = Swarm(kwargs["location"], kwargs["pokemon1"], kwargs["pokemon2"])
+            event = Swarm(kwargs["map"], kwargs=kwargs)
         # elif eventname == "onlinelist":
         #     event = OnlineList(kwargs["timestamp"], kwargs["online"])
         elif eventname == "worldboss":

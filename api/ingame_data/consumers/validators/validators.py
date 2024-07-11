@@ -378,17 +378,11 @@ class Validators:
                         "data": {
                             "type": "object",
                             "properties": {
-                                "pokemon1": {
-                                    "type": "string",
-                                },
-                                "pokemon2": {
-                                    "type": "string",
-                                },
-                                "location": {
+                                "map": {
                                     "type": "string",
                                 }
                             },
-                            "required": ["location", "pokemon1", "pokemon2"],
+                            "required": ["map"],
                         },
                     },
                     "required": ["data"]

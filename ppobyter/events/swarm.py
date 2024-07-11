@@ -11,25 +11,27 @@ class Swarm(Event):
     """
     This event gets triggered when a swarm shows up.
     """
-    def __init__(self, location: str, pokemon1: str, pokemon2: str):
+    def __init__(self, location: str, **kwargs):
         """
         This calls the superclass, sets the location, the first pokemon, and the second pokemon of the swarm.
         :param location: The location where the swarm showed up.
-        :param pokemon1: The first pokemon that showed up in the swarm.
-        :param pokemon2: The second pokemon that showed up in the swarm.
+        :param kwargs: The pokemons that are part of the swarm + remaining swarm info.
         """
         self.location = location.lower()
-        self.pokemon1 = pokemon1.lower()
-        self.pokemon2 = pokemon2.lower()
         self.EVENTNAME = "swarm"
         super(Swarm, self).__init__()
+        self.pokemon = {rarity: pokemons for rarity, pokemons in kwargs.items() if rarity in ["common", "uncommon", "rare", "veryRare", "extremelyRare", "legendary"]}
 
     def makeMessage(self) -> list:
         """
         Makes the message that gets sent to the recipients.
         :return: The message.
         """
-        messages = [f"A group of wild {self.pokemon1} and {self.pokemon2} have been spotted at {self.location}!"]
+        messages = [f"```md\n**A swarm of Pokemon have invaded {self.location}!**\n"]
+        for rarity, pokemons in self.pokemon.items():
+            # Insert a space before every capital letter
+            human_rarity_name = "".join([char if char.islower() else f" {char}" for char in rarity]).lower()
+            messages[0] += f"**{human_rarity_name}**: " + ", ".join(pokemons) + "\n"
 
         location_embed = self._make_location_embed(self.location)
         if location_embed:
