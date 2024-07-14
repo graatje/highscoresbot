@@ -20,6 +20,7 @@ class Command(BaseCommand, ABC):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Seeding database, consider running python manage.py flush first to clear the database.'))
 
+        self._createSuperuser()
         self._seedEventNames()
         self._seedHighscoreConfigs()
         self._seedEncounters()
