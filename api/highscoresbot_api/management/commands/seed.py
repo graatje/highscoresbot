@@ -6,7 +6,7 @@ from api.ingame_data.models import Encounter
 from api.ingame_data.models.eventname import Eventname
 from api.highscores.models.highscoreconfig import HighscoreConfig
 from api.eventconfigurations.models import Eventconfiguration
-from django.contrib.auth.models import User
+from api.highscoresbot_api.models import User
 import datetime
 import random
 import os
@@ -30,7 +30,7 @@ class Command(BaseCommand, ABC):
 
     def _createSuperuser(self):
         self.stdout.write(self.style.SUCCESS('Creating superuser'))
-        User.objects.create_superuser(username=os.environ.get("botusername"), email=os.environ.get("test@gmail.com"), password=os.environ.get("botpassword"))
+        User.objects.create_superuser(username=os.environ.get("botusername"), email=os.environ.get("test@gmail.com"), password=os.environ.get("botpassword"), prefix="?")
         self.stdout.write(self.style.SUCCESS('Created superuser'))
 
     def _seedEventNames(self):
