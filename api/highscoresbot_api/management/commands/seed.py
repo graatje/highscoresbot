@@ -6,9 +6,12 @@ from api.ingame_data.models import Encounter
 from api.ingame_data.models.eventname import Eventname
 from api.highscores.models.highscoreconfig import HighscoreConfig
 from api.eventconfigurations.models import Eventconfiguration
-
+from django.contrib.auth.models import User
 import datetime
 import random
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class Command(BaseCommand, ABC):
@@ -23,6 +26,11 @@ class Command(BaseCommand, ABC):
         self._seedEventconfigs()
 
         self.stdout.write(self.style.SUCCESS('Seeded database'))
+
+    def _createSuperuser(self):
+        self.stdout.write(self.style.SUCCESS('Creating superuser'))
+        User.objects.create_superuser(username=os.environ.get("botusername"), email=os.environ.get("test@gmail.com"), password=os.environ.get("botpassword"))
+        self.stdout.write(self.style.SUCCESS('Created superuser'))
 
     def _seedEventNames(self):
         self.stdout.write(self.style.SUCCESS('Seeding eventnames'))

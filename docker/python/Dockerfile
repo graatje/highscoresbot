@@ -10,6 +10,6 @@ WORKDIR /app
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-EXPOSE 8000
+EXPOSE ${APP_PORT}
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["sh", "-c", "python manage.py runserver 0.0.0.0:${APP_PORT}"]
