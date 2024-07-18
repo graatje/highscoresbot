@@ -27,7 +27,7 @@ class Swarm(Event):
         Makes the message that gets sent to the recipients.
         :return: The message.
         """
-        messages = [f"A swarm of Pokemon have invaded {self.location}!**\n"]
+        messages = [f"**A swarm of Pokemon have invaded {self.location}!**\n"]
         for rarity, pokemons in self.pokemon.items():
             # Insert a space before every capital letter
             human_rarity_name = "".join([char if char.islower() else f" {char}" for char in rarity]).lower()
