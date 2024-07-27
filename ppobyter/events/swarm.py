@@ -79,17 +79,4 @@ class Swarm(Event):
         imgurl = f"https://www.ppobuddy.com/locations/{location['region'].lower()}/{location['imageName'] if 'imageName' in location else location['_id']}.png"
         embed.set_image(url=imgurl)
 
-        if "encounters" not in location:
-            return None
-
-        for category, pokemon_encounters in location["encounters"].items():  # example: land, list of pokemon
-            embed.add_field(name=category.capitalize(), value=" ", inline=False)
-
-            encounter_text_list = [
-                f"{encounter_info['pokemonId'].capitalize()} <{config.RARITY_MAPPING.get(encounter_info['rarity'], 'Unknown Rarity')}>"
-                for encounter_info in pokemon_encounters]
-
-            locations_string = "\n".join(encounter_text_list)
-
-            embed.add_field(name=" ", value=locations_string, inline=False)
         return embed
