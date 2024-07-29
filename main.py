@@ -53,8 +53,7 @@ class Main(commands.Bot):
         super().__init__([".", "?"], intents=discord.Intents.default())
         # self.cog_files = ["commands.ingame_events", "commands.highscores", "commands.eventconfig",
         #                   "commands.miscellaneous", "commands.pmconfig"]
-        self.cog_files = ["commands.slash_commands.highscores",
-                         "commands.slash_commands.eventconfigurations",
+        self.cog_files = ["commands.slash_commands.eventconfigurations",
                          "commands.slash_commands.ingame_events",
                           "commands.slash_commands.miscellaneous",
                           #"commands.slash_commands.pmconfig",
